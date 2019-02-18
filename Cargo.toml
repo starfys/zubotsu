@@ -1,8 +1,16 @@
 [package]
 name = "zubotsu"
 version = "0.1.0"
-authors = ["Steven Sheffey <srs6p@mtmail.mtsu.edu>"]
 edition = "2018"
+authors = ["Steven Sheffey <srs6p@mtmail.mtsu.edu>"]
+license = "GPL-3.0-or-later"
+homepage = "https://github.com/starfys/zubotsu"
+repository = "https://github.com/starfys/zubotsu"
+keywords = ["bot", "discord"]
+readme = "README.md"
+
+publish = false
+
 
 [dependencies]
 serenity = "0.5"
