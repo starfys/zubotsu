@@ -1,6 +1,7 @@
 use serenity::client::Client;
 use serenity::framework::Framework;
 use serenity::model::channel::Message;
+use serenity::model::id::EmojiId;
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
 use threadpool::ThreadPool;
@@ -33,8 +34,8 @@ impl Framework for MyFramework {
         // check if someone's talking about DANK PROGRAMMING LANGUAGES
         if message_text.contains("rust") {
             let rust_emoji = EmojiIdentifier {
-                id: 539907481095110676.into(),
-                name: "rust".into(),
+                id: EmojiId(539907481095110676),
+                name: "rust".to_string(),
             };
             let _ = message.react(rust_emoji);
         }
