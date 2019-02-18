@@ -33,8 +33,8 @@ fn main() {
     // Set the client to use our dank rust framework
     client.with_framework(ZubotsuFramework::new());
 
-    // start listening for events by starting a single shard
-    if let Err(why) = client.start_shards(8) {
+    // start listening for events by starting many shards
+    if let Err(why) = client.start_shards(4) {
         println!("An error occurred while running the client: {:?}", why);
     }
 }
