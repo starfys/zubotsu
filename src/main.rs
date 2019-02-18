@@ -28,6 +28,7 @@ struct MyFramework;
 
 impl Framework for MyFramework {
     fn dispatch(&mut self, _: Context, message: Message, _: &ThreadPool) {
+        // Lowercase the message and check if someone's talking about DANK PROGRAMMING LANGUAGES
         if message.content.to_lowercase().contains("rust") {
             let rust_emoji = EmojiIdentifier {
                 id: 539907481095110676.into(),
