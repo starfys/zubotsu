@@ -55,6 +55,7 @@ impl ZubotsuFramework {
 
 impl Framework for ZubotsuFramework {
     fn dispatch(&mut self, _: Context, message: Message, _: &ThreadPool) {
+        println!("{:?}", message);
         // Convert the message to lowercase for string matching
         let message_text = message.content.to_lowercase();
         // check if someone's talking about DANK PROGRAMMING LANGUAGES
