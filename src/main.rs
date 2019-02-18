@@ -85,5 +85,10 @@ impl Framework for ZubotsuFramework {
                 let _ = message.reply("*cracks knuckles* it's Free Software time");
             }
         }
+        // Megadownbishoy
+        if message_text.starts_with("!megadownbishoy") {
+            let _ = message
+                .reply(":megadownbishoy00::megadownbishoy01:\n:megadownbishoy10::megadownbishoy11");
+        }
     }
 }
