@@ -59,12 +59,14 @@ impl Framework for ZubotsuFramework {
         if self.stallman {
             if message_text == "stop stallman" {
                 self.stallman = false;
+                let _ = message.reply("Okay, but just know that Stallman is watching");
             } else if message_text.contains("linux") && !message_text.contains("gnu") {
                 let _ = message.reply(data::GNU_LINUX_COPYPASTA);
             }
         } else {
             if message_text == "start stallman" {
                 self.stallman = true;
+                let _ = message.reply("*cracks knuckles* it's Free Software time");
             }
         }
     }
