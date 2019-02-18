@@ -28,13 +28,19 @@ struct MyFramework;
 
 impl Framework for MyFramework {
     fn dispatch(&mut self, _: Context, message: Message, _: &ThreadPool) {
-        // Lowercase the message and check if someone's talking about DANK PROGRAMMING LANGUAGES
-        if message.content.to_lowercase().contains("rust") {
+        // Convert the message to lowercase for string matching
+        let message_text = message.content.to_lowercase();
+        // check if someone's talking about DANK PROGRAMMING LANGUAGES
+        if message_text.contains("rust") {
             let rust_emoji = EmojiIdentifier {
                 id: 539907481095110676.into(),
                 name: "rust".into(),
             };
             let _ = message.react(rust_emoji);
+        }
+        // emulate Kinser
+        if message_text.contains("map") {
+            let _ = message.react("🗺");
         }
     }
 }
