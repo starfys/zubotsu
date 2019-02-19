@@ -34,7 +34,7 @@ fn main() {
     client.with_framework(ZubotsuFramework::new());
 
     // start listening for events by starting one shard
-    if let Err(why) = client.start() {
+    if let Err(why) = client.start_autosharded() {
         println!("An error occurred while running the client: {:?}", why);
     }
 }
@@ -54,8 +54,7 @@ impl ZubotsuFramework {
 }
 
 impl Framework for ZubotsuFramework {
-    fn dispatch(&mut self, _: Context, message: Message, _: &ThreadPool) {
-        println!("{:?}", message);
+    fn dispatch(&mut self, _context: Context, message: Message, threadpool: &ThreadPool) {
         // Convert the message to lowercase for string matching
         let message_text = message.content.to_lowercase();
         // check if someone's talking about DANK PROGRAMMING LANGUAGES
@@ -66,7 +65,10 @@ impl Framework for ZubotsuFramework {
                 name: "rust".to_string(),
             };
             // Respond with the rust emoji
-            let _ = message.react(rust_emoji);
+            let message = message.clone();
+            threadpool.execute(move || {
+                let _ = message.react(rust_emoji);
+            });
         }
         // emulate Kinser
         if message_text.contains("map") {
@@ -76,21 +78,33 @@ impl Framework for ZubotsuFramework {
         if self.stallman {
             if message_text == "stop stallman" {
                 self.stallman = false;
-                let _ = message.reply("Okay, but just know that Stallman is watching");
+                let message = message.clone();
+                threadpool.execute(move || {
+                    let _ = message.reply("Okay, but just know that Stallman is watching");
+                });
             } else if message_text.contains("linux") && !message_text.contains("gnu") {
-                let _ = message.reply(data::GNU_LINUX_COPYPASTA);
+                let message = message.clone();
+                threadpool.execute(move || {
+                    let _ = message.reply(data::GNU_LINUX_COPYPASTA);
+                });
             }
         } else {
             if message_text == "start stallman" {
                 self.stallman = true;
-                let _ = message.reply("*cracks knuckles* it's Free Software time");
+                let message = message.clone();
+                threadpool.execute(move || {
+                    let _ = message.reply("*cracks knuckles* it's Free Software time");
+                });
             }
         }
         // Megadownbishoy
         if message_text.starts_with("!megadownbishoy") {
-            let _ = message.reply(
-                ":megadownbishoy00::megadownbishoy01:\n:megadownbishoy10::megadownbishoy11:",
-            );
+            let message = message.clone();
+            threadpool.execute(move || {
+                let _ = message.reply(
+                    ":megadownbishoy00::megadownbishoy01:\n:megadownbishoy10::megadownbishoy11:",
+                );
+            });
         }
     }
 }
