@@ -13,5 +13,6 @@ publish = false
 
 
 [dependencies]
+chrono = "0.4"
 serenity = "0.5"
 threadpool = "1.7"

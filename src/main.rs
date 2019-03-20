@@ -21,6 +21,7 @@ use serenity::model::id::EmojiId;
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
 use threadpool::ThreadPool;
+use chrono::prelude::*;
 
 use std::env;
 
@@ -104,6 +105,18 @@ impl Framework for ZubotsuFramework {
                 let _ = message.reply(
                     ":megadownbishoy00::megadownbishoy01:\n:megadownbishoy10::megadownbishoy11:",
                 );
+            });
+        }
+        //the one true time
+        if message_text.contains("time") {
+            let message = message.clone();
+            let maboi = Utc::now().time();
+            threadpool.execute(move || {
+                let _ = message.reply(&format!(
+                    "@{:.0}.beats",
+                    (maboi.second() + (maboi.minute() * 60) + ((maboi.hour() + 1) * 3600)) as f32
+                        / 86.4
+                ));
             });
         }
     }
