@@ -882,6 +882,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "zubotsu"
 version = "0.1.0"
 dependencies = [
+ "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "serenity 0.5.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "threadpool 1.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
