@@ -98,23 +98,21 @@ impl Framework for ZubotsuFramework {
                 });
             }
         }
-        // Megadownbishoy
-        if message_text.starts_with("!megadownbishoy") {
-            let message = message.clone();
-            threadpool.execute(move || {
-                let _ = message.reply(
-                    ":megadownbishoy00::megadownbishoy01:\n:megadownbishoy10::megadownbishoy11:",
-                );
-            });
-        }
         //the one true time
         if message_text.contains("time in beats") {
             let message = message.clone();
-            let maboi = Utc::now().time();
+
+            let minute = 60;
+            let hour = 60 * minute;
+
+            let internet_timezone = FixedOffset::east(1 * hour as i32);
+
+            let maboi = Utc::now().with_timezone(&internet_timezone).time();
             threadpool.execute(move || {
                 let _ = message.reply(&format!(
-                    "The current Internet Time is @{:.0}.beats",
-                    (maboi.second() + (maboi.minute() * 60) + ((maboi.hour() + 1) * 3600)) as f32
+                    "The current Internet Time is @{:.3}.beats",
+                    ((maboi.second() + maboi.minute() * minute + maboi.hour() * hour) as f64
+                        + (maboi.nanosecond() as f64 / 1_000_000_000.0))
                         / 86.4
                 ));
             });
