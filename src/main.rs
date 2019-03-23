@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Zubotsu.  If not, see <https://www.gnu.org/licenses/>.
 
+use chrono::prelude::*;
 use serenity::client::Client;
 use serenity::framework::Framework;
 use serenity::model::channel::Message;
@@ -21,7 +22,6 @@ use serenity::model::id::EmojiId;
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
 use threadpool::ThreadPool;
-use chrono::prelude::*;
 
 use std::env;
 
@@ -108,12 +108,12 @@ impl Framework for ZubotsuFramework {
             });
         }
         //the one true time
-        if message_text.contains("time") {
+        if message_text.contains("time in beats") {
             let message = message.clone();
             let maboi = Utc::now().time();
             threadpool.execute(move || {
                 let _ = message.reply(&format!(
-                    "@{:.0}.beats",
+                    "The current Internet Time is @{:.0}.beats",
                     (maboi.second() + (maboi.minute() * 60) + ((maboi.hour() + 1) * 3600)) as f32
                         / 86.4
                 ));
