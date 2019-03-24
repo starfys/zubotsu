@@ -98,7 +98,7 @@ impl Framework for ZubotsuFramework {
                 });
             }
         }
-        //the one true time
+        // the one true time
         if message_text.contains("time in beats") {
             let message = message.clone();
 
@@ -112,8 +112,7 @@ impl Framework for ZubotsuFramework {
                 let _ = message.reply(&format!(
                     "The current Internet Time is @{:.3}.beats",
                     ((maboi.second() + maboi.minute() * minute + maboi.hour() * hour) as f64
-                        + (maboi.nanosecond() as f64 / 1_000_000_000.0))
-                        / 86.4
+                        + (maboi.nanosecond() as f64 / 1_000_000_000.0)) / 86.4
                 ));
             });
         }
