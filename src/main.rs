@@ -71,6 +71,23 @@ impl Framework for ZubotsuFramework {
                 let _ = message.react(rust_emoji);
             });
         }
+        // check to see if someone's talking about THE ULTIMATE LIFE FORM^H^H^H^H LANGUAGE
+        if message_text.contains("haskell")
+           || message_text.contains("monad")
+           || message_text.contains("functor")
+           || message_text.contains("typeclass")
+        {
+            // Construct the haskell emoji
+            let haskell_emoji = EmojiIdentifier {
+                id: EmojiId(540376527674540048),
+                name: "haskell".to_string(),
+            };
+            // Respond with the haskell emoji
+            let message = message.clone();
+            threadpool.execute(move || {
+                let _ = message.react(haskell_emoji);
+            });
+        }
         // emulate Kinser
         if message_text.contains("map") {
             let _ = message.react("🗺");
