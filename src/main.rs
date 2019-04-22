@@ -24,6 +24,8 @@ use serenity::prelude::{Context, EventHandler};
 use threadpool::ThreadPool;
 
 use std::env;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 mod data;
 
@@ -45,93 +47,90 @@ struct Handler;
 impl EventHandler for Handler {}
 
 struct ZubotsuFramework {
-    stallman: bool,
+    stallman: Arc<AtomicBool>,
 }
 
 impl ZubotsuFramework {
     fn new() -> Self {
-        ZubotsuFramework { stallman: true }
+        ZubotsuFramework {
+            stallman: Arc::new(AtomicBool::new(false)),
+        }
     }
 }
 
 impl Framework for ZubotsuFramework {
     fn dispatch(&mut self, _context: Context, message: Message, threadpool: &ThreadPool) {
-        // Convert the message to lowercase for string matching
-        let message_text = message.content.to_lowercase();
-        // check if someone's talking about DANK PROGRAMMING LANGUAGES
-        if message_text.contains("rust") {
-            // Construct the rust emoji
-            let rust_emoji = EmojiIdentifier {
-                id: EmojiId(539907481095110676),
-                name: "rust".to_string(),
-            };
-            // Respond with the rust emoji
-            let message = message.clone();
-            threadpool.execute(move || {
+        // Clone a message reference
+        let message = message.clone();
+        let stallman = self.stallman.clone();
+        // Handle the message in another thread
+        threadpool.execute(move || {
+            // Convert the message to lowercase for string matching
+            let message_text = message.content.to_lowercase();
+            // check if someone's talking about DANK PROGRAMMING LANGUAGES
+            if message_text.contains("rust") {
+                // Construct the rust emoji
+                let rust_emoji = EmojiIdentifier {
+                    id: EmojiId(539907481095110676),
+                    name: "rust".to_string(),
+                };
+                // Respond with the rust emoji
+                let message = message.clone();
                 let _ = message.react(rust_emoji);
-            });
-        }
-        // check to see if someone's talking about THE ULTIMATE LIFE FORM^H^H^H^H LANGUAGE
-        if message_text.contains("haskell")
-           || message_text.contains("monad")
-           || message_text.contains("functor")
-           || message_text.contains("typeclass")
-        {
-            // Construct the haskell emoji
-            let haskell_emoji = EmojiIdentifier {
-                id: EmojiId(540376527674540048),
-                name: "haskell".to_string(),
-            };
-            // Respond with the haskell emoji
-            let message = message.clone();
-            threadpool.execute(move || {
+            }
+            // check to see if someone's talking about THE ULTIMATE LIFE FORM^H^H^H^H LANGUAGE
+            if message_text.contains("haskell")
+                || message_text.contains("monad")
+                || message_text.contains("functor")
+                || message_text.contains("typeclass")
+            {
+                // Construct the haskell emoji
+                let haskell_emoji = EmojiIdentifier {
+                    id: EmojiId(540376527674540048),
+                    name: "haskell".to_string(),
+                };
+                // Respond with the haskell emoji
+                let message = message.clone();
                 let _ = message.react(haskell_emoji);
-            });
-        }
-        // emulate Kinser
-        if message_text.contains("map") {
-            let _ = message.react("🗺");
-        }
-        // Stallman
-        if self.stallman {
-            if message_text == "stop stallman" {
-                self.stallman = false;
-                let message = message.clone();
-                threadpool.execute(move || {
+            }
+            // emulate Kinser
+            if message_text.contains("map") {
+                let _ = message.react("🗺");
+            }
+            // Stallman
+            if stallman.load(Ordering::SeqCst) {
+                if message_text == "stop stallman" {
+                    stallman.store(false, Ordering::SeqCst);
+                    let message = message.clone();
                     let _ = message.reply("Okay, but just know that Stallman is watching");
-                });
-            } else if message_text.contains("linux") && !message_text.contains("gnu") {
-                let message = message.clone();
-                threadpool.execute(move || {
+                } else if message_text.contains("linux") && !message_text.contains("gnu") {
+                    let message = message.clone();
                     let _ = message.reply(data::GNU_LINUX_COPYPASTA);
-                });
-            }
-        } else {
-            if message_text == "start stallman" {
-                self.stallman = true;
-                let message = message.clone();
-                threadpool.execute(move || {
+                }
+            } else {
+                if message_text == "start stallman" {
+                    stallman.store(true, Ordering::SeqCst);
+                    let message = message.clone();
                     let _ = message.reply("*cracks knuckles* it's Free Software time");
-                });
+                }
             }
-        }
-        // the one true time
-        if message_text.contains("time in beats") {
-            let message = message.clone();
+            // the one true time
+            if message_text.contains("time in beats") {
+                let message = message.clone();
 
-            let minute = 60;
-            let hour = 60 * minute;
+                let minute = 60;
+                let hour = 60 * minute;
 
-            let internet_timezone = FixedOffset::east(1 * hour as i32);
+                let internet_timezone = FixedOffset::east(1 * hour as i32);
 
-            let maboi = Utc::now().with_timezone(&internet_timezone).time();
-            threadpool.execute(move || {
+                let maboi = Utc::now().with_timezone(&internet_timezone).time();
                 let _ = message.reply(&format!(
                     "The current Internet Time is @{:.3}.beats",
                     ((maboi.second() + maboi.minute() * minute + maboi.hour() * hour) as f64
-                        + (maboi.nanosecond() as f64 / 1_000_000_000.0)) / 86.4
+                        + (maboi.nanosecond() as f64 / 1_000_000_000.0))
+                        / 86.4
                 ));
-            });
-        }
+            }
+        });
     }
 }
