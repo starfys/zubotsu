@@ -131,6 +131,22 @@ impl Framework for ZubotsuFramework {
                         / 86.4
                 ));
             }
+
+            // the meme time
+            if message_text.contains("time in scaramuccis") {
+                let message = message.clone();
+
+                let scaramucci_start = Utc.ymd(2017, 7, 25).and_hms(9, 0, 0).timestamp_millis();
+                let scaramucci_end = Utc.ymd(2017, 7, 31).and_hms(9, 0, 0).timestamp_millis();
+                let scaramucci_duration = scaramucci_end - scaramucci_start;
+                let scaramucci_time = (Utc::now().timestamp_millis() - scaramucci_start) as f64
+                    / (scaramucci_duration as f64);
+
+                let _ = message.reply(&format!(
+                    "It has been {:.2} scaramuccis since the scaramucci muccied",
+                    scaramucci_time
+                ));
+            }
         });
     }
 }
