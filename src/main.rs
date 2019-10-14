@@ -47,13 +47,13 @@ struct Handler;
 impl EventHandler for Handler {}
 
 struct ZubotsuFramework {
-    stallman: Arc<AtomicBool>,
+    free_software: Arc<AtomicBool>,
 }
 
 impl ZubotsuFramework {
     fn new() -> Self {
         ZubotsuFramework {
-            stallman: Arc::new(AtomicBool::new(false)),
+            free_software: Arc::new(AtomicBool::new(false)),
         }
     }
 }
@@ -62,7 +62,7 @@ impl Framework for ZubotsuFramework {
     fn dispatch(&mut self, _context: Context, message: Message, threadpool: &ThreadPool) {
         // Clone a message reference
         let message = message.clone();
-        let stallman = self.stallman.clone();
+        let free_software = self.free_software.clone();
         // Handle the message in another thread
         threadpool.execute(move || {
             // Convert the message to lowercase for string matching
@@ -97,19 +97,19 @@ impl Framework for ZubotsuFramework {
             if message_text.contains("map") {
                 let _ = message.react("🗺");
             }
-            // Stallman
-            if stallman.load(Ordering::SeqCst) {
-                if message_text == "stop stallman" {
-                    stallman.store(false, Ordering::SeqCst);
+            // Miku is the real leader of the gnu project
+            if free_software.load(Ordering::SeqCst) {
+                if message_text == "stop free software" {
+                    free_software.store(false, Ordering::SeqCst);
                     let message = message.clone();
-                    let _ = message.reply("Okay, but just know that Stallman is watching");
+                    let _ = message.reply("Okay, but just know that free software is watching");
                 } else if message_text.contains("linux") && !message_text.contains("gnu") {
                     let message = message.clone();
                     let _ = message.reply(data::GNU_LINUX_COPYPASTA);
                 }
             } else {
-                if message_text == "start stallman" {
-                    stallman.store(true, Ordering::SeqCst);
+                if message_text == "start free software" {
+                    free_software.store(true, Ordering::SeqCst);
                     let message = message.clone();
                     let _ = message.reply("*cracks knuckles* it's Free Software time");
                 }
