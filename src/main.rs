@@ -21,6 +21,7 @@ use serenity::model::channel::Message;
 use serenity::model::id::EmojiId;
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
+use std::collections::{HashMap, HashSet};
 use threadpool::ThreadPool;
 
 use std::env;
@@ -48,12 +49,41 @@ impl EventHandler for Handler {}
 
 struct ZubotsuFramework {
     free_software: Arc<AtomicBool>,
+    regional_indicator_map: HashMap<char, &'static str>,
 }
 
 impl ZubotsuFramework {
     fn new() -> Self {
+        let mut regional_indicator_map = HashMap::new();
+        regional_indicator_map.insert('a', "🇦");
+        regional_indicator_map.insert('b', "🇧");
+        regional_indicator_map.insert('c', "🇨");
+        regional_indicator_map.insert('d', "🇩");
+        regional_indicator_map.insert('e', "🇪");
+        regional_indicator_map.insert('f', "🇫");
+        regional_indicator_map.insert('g', "🇬");
+        regional_indicator_map.insert('h', "🇭");
+        regional_indicator_map.insert('i', "🇮");
+        regional_indicator_map.insert('j', "🇯");
+        regional_indicator_map.insert('k', "🇰");
+        regional_indicator_map.insert('l', "🇱");
+        regional_indicator_map.insert('m', "🇲");
+        regional_indicator_map.insert('n', "🇳");
+        regional_indicator_map.insert('o', "🇴");
+        regional_indicator_map.insert('p', "🇵");
+        regional_indicator_map.insert('q', "🇶");
+        regional_indicator_map.insert('r', "🇷");
+        regional_indicator_map.insert('s', "🇸");
+        regional_indicator_map.insert('t', "🇹");
+        regional_indicator_map.insert('u', "🇺");
+        regional_indicator_map.insert('v', "🇻");
+        regional_indicator_map.insert('w', "🇼");
+        regional_indicator_map.insert('x', "🇽");
+        regional_indicator_map.insert('y', "🇾");
+        regional_indicator_map.insert('z', "🇿");
         ZubotsuFramework {
             free_software: Arc::new(AtomicBool::new(false)),
+            regional_indicator_map: regional_indicator_map,
         }
     }
 }
@@ -63,6 +93,7 @@ impl Framework for ZubotsuFramework {
         // Clone a message reference
         let message = message.clone();
         let free_software = self.free_software.clone();
+        let regional_indicator_map = self.regional_indicator_map.clone();
         // Handle the message in another thread
         threadpool.execute(move || {
             // Convert the message to lowercase for string matching
@@ -146,6 +177,42 @@ impl Framework for ZubotsuFramework {
                     "It has been {:.2} scaramuccis since the scaramucci muccied",
                     scaramucci_time
                 ));
+            }
+
+            // emoji-ify the command 
+            if message_text.starts_with("zubotsu") {
+                let message = message.clone();
+                let message_text = message_text.replacen("zubotsu","",1).replace(" ","");
+                if message_text == "" {
+                    let _ = message.reply("Nothing to respond with");
+                } else {
+                    if !message_text.chars().all(char::is_alphanumeric){
+                        let _ = message.reply("Can only respond with alphanumerics");
+                    } else {
+                        // unless I want to handle duplicate emojis for a such as 🇦 and 🅰 then will have to make sure
+                        // that each char only shows up once
+                        let mut char_set = HashSet::new();
+                        let mut is_nondistinct = false;
+                        for character in message_text.chars() {
+                            if !char_set.contains(&character) {
+                                char_set.insert(character);
+                            } else {
+                                is_nondistinct = true;
+                                break;
+                            }
+                        }
+                        if is_nondistinct {
+                            let _ = message.reply("Currently can only reply to words with only one emoji per character");
+                        } else {
+                            for character in message_text.chars() {
+                                let _ = match regional_indicator_map.get(&character) {
+                                    Some(emoji) => message.react(emoji.to_string()),
+                                    None => std::result::Result::Ok(()),
+                                };
+                            }
+                        }
+                    }
+                }
             }
         });
     }
