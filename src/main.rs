@@ -130,7 +130,7 @@ impl Framework for ZubotsuFramework {
             }
             // Miku is the real leader of the gnu project
             if free_software.load(Ordering::SeqCst) {
-                if message_text == "stop free software" {
+                if message_text == "stop free software" || message_text == "stop miku" {
                     free_software.store(false, Ordering::SeqCst);
                     let message = message.clone();
                     let _ = message.reply("Okay, but just know that free software is watching");
@@ -139,7 +139,7 @@ impl Framework for ZubotsuFramework {
                     let _ = message.reply(data::GNU_LINUX_COPYPASTA);
                 }
             } else {
-                if message_text == "start free software" {
+                if message_text == "start free software" || message_text == "start miku" {
                     free_software.store(true, Ordering::SeqCst);
                     let message = message.clone();
                     let _ = message.reply("*cracks knuckles* it's Free Software time");
