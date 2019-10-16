@@ -21,7 +21,7 @@ use serenity::model::channel::Message;
 use serenity::model::id::EmojiId;
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use threadpool::ThreadPool;
 
 use std::env;
@@ -49,38 +49,144 @@ impl EventHandler for Handler {}
 
 struct ZubotsuFramework {
     free_software: Arc<AtomicBool>,
-    regional_indicator_map: HashMap<char, &'static str>,
+    regional_indicator_map: HashMap<char, Vec<&'static str>>,
 }
 
 impl ZubotsuFramework {
     fn new() -> Self {
-        let mut regional_indicator_map = HashMap::new();
-        regional_indicator_map.insert('a', "🇦");
-        regional_indicator_map.insert('b', "🇧");
-        regional_indicator_map.insert('c', "🇨");
-        regional_indicator_map.insert('d', "🇩");
-        regional_indicator_map.insert('e', "🇪");
-        regional_indicator_map.insert('f', "🇫");
-        regional_indicator_map.insert('g', "🇬");
-        regional_indicator_map.insert('h', "🇭");
-        regional_indicator_map.insert('i', "🇮");
-        regional_indicator_map.insert('j', "🇯");
-        regional_indicator_map.insert('k', "🇰");
-        regional_indicator_map.insert('l', "🇱");
-        regional_indicator_map.insert('m', "🇲");
-        regional_indicator_map.insert('n', "🇳");
-        regional_indicator_map.insert('o', "🇴");
-        regional_indicator_map.insert('p', "🇵");
-        regional_indicator_map.insert('q', "🇶");
-        regional_indicator_map.insert('r', "🇷");
-        regional_indicator_map.insert('s', "🇸");
-        regional_indicator_map.insert('t', "🇹");
-        regional_indicator_map.insert('u', "🇺");
-        regional_indicator_map.insert('v', "🇻");
-        regional_indicator_map.insert('w', "🇼");
-        regional_indicator_map.insert('x', "🇽");
-        regional_indicator_map.insert('y', "🇾");
-        regional_indicator_map.insert('z', "🇿");
+        let mut regional_indicator_map: HashMap<char, Vec<&'static str>> = HashMap::new();
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇦");
+        vec.push("🅰");
+        regional_indicator_map.insert('a', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇧");
+        vec.push("🅱");
+        regional_indicator_map.insert('b', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇨");
+        vec.push("©");
+        vec.push("🌜");
+        regional_indicator_map.insert('c', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇩");
+        regional_indicator_map.insert('d', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇪");
+        vec.push("📧");
+        regional_indicator_map.insert('e', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇫");
+        regional_indicator_map.insert('f', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇬");
+        regional_indicator_map.insert('g', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇭");
+        regional_indicator_map.insert('h', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇮");
+        vec.push("ℹ");
+        regional_indicator_map.insert('i', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇯");
+        regional_indicator_map.insert('j', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇰");
+        regional_indicator_map.insert('k', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇱");
+        regional_indicator_map.insert('l', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇲");
+        vec.push("Ⓜ");
+        regional_indicator_map.insert('m', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇳");
+        regional_indicator_map.insert('n', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇴");
+        vec.push("🅾");
+        vec.push("🅾️");
+        vec.push("🌕");
+        vec.push("🌚");
+        vec.push("🌝");
+        vec.push("⚙");
+        regional_indicator_map.insert('o', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇵");
+        vec.push("🅿");
+        regional_indicator_map.insert('p', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇶");
+        regional_indicator_map.insert('q', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇷");
+        vec.push("®");
+        regional_indicator_map.insert('r', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇸");
+        vec.push("⚡");
+        regional_indicator_map.insert('s', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇹");
+        vec.push("✝");
+        vec.push("☦");
+        regional_indicator_map.insert('t', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇺");
+        regional_indicator_map.insert('u', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇻");
+        regional_indicator_map.insert('v', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇼");
+        regional_indicator_map.insert('w', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇽");
+        regional_indicator_map.insert('x', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇾");
+        regional_indicator_map.insert('y', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("🇿");
+        regional_indicator_map.insert('z', vec);
+
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("‼");
+        regional_indicator_map.insert('!', vec);
+
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("9⃣");
+        regional_indicator_map.insert('9', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("7⃣");
+        regional_indicator_map.insert('7', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("8⃣");
+        regional_indicator_map.insert('8', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("6⃣");
+        regional_indicator_map.insert('6', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("5⃣");
+        regional_indicator_map.insert('5', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("4⃣");
+        regional_indicator_map.insert('4', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("3⃣");
+        regional_indicator_map.insert('3', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("2⃣");
+        regional_indicator_map.insert('2', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("1⃣");
+        regional_indicator_map.insert('1', vec);
+        let mut vec: Vec<&'static str> = Vec::new();
+        vec.push("0⃣");
+        regional_indicator_map.insert('0', vec);
+
         ZubotsuFramework {
             free_software: Arc::new(AtomicBool::new(false)),
             regional_indicator_map: regional_indicator_map,
@@ -179,38 +285,31 @@ impl Framework for ZubotsuFramework {
                 ));
             }
 
-            // emoji-ify the command 
+            // emoji-ify the command
             if message_text.starts_with("zubotsu") {
                 let message = message.clone();
-                let message_text = message_text.replacen("zubotsu","",1).replace(" ","");
+                let message_text = message_text.replacen("zubotsu", "", 1).replace(" ", "");
                 if message_text == "" {
                     let _ = message.reply("Nothing to respond with");
                 } else {
-                    if !message_text.chars().all(char::is_alphanumeric){
-                        let _ = message.reply("Can only respond with alphanumerics");
-                    } else {
-                        // unless I want to handle duplicate emojis for a such as 🇦 and 🅰 then will have to make sure
-                        // that each char only shows up once
-                        let mut char_set = HashSet::new();
-                        let mut is_nondistinct = false;
-                        for character in message_text.chars() {
-                            if !char_set.contains(&character) {
-                                char_set.insert(character);
-                            } else {
-                                is_nondistinct = true;
-                                break;
-                            }
-                        }
-                        if is_nondistinct {
-                            let _ = message.reply("Currently can only reply to words with only one emoji per character");
-                        } else {
-                            for character in message_text.chars() {
-                                let _ = match regional_indicator_map.get(&character) {
-                                    Some(emoji) => message.react(emoji.to_string()),
-                                    None => std::result::Result::Ok(()),
+                    let mut visited_chars: HashMap<char, usize> = HashMap::new();
+
+                    for character in message_text.chars() {
+                        let _ = match regional_indicator_map.get(&character) {
+                            Some(emoji_list) => {
+                                let emoji_index = match visited_chars.get(&character) {
+                                    Some(index) => *index as usize,
+                                    None => 0 as usize,
                                 };
+                                visited_chars.insert(character, emoji_index + 1);
+                                if emoji_index < emoji_list.len() {
+                                    message.react(emoji_list[emoji_index].to_string())
+                                } else {
+                                    std::result::Result::Ok(())
+                                }
                             }
-                        }
+                            None => std::result::Result::Ok(()),
+                        };
                     }
                 }
             }
