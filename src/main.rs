@@ -63,7 +63,7 @@ impl ZubotsuFramework {
         emoji_map.insert('f', vec!["🇫", "🎏"]);
         emoji_map.insert('g', vec!["🇬"]);
         emoji_map.insert('h', vec!["🇭", "♓"]);
-        emoji_map.insert('i', vec!["🇮", "ℹ",  "🌵", "🚦", "🛢", "🕯", "📍", "🎚"]);
+        emoji_map.insert('i', vec!["🇮", "ℹ", "🌵", "🚦", "🛢", "🕯", "📍", "🎚"]);
         emoji_map.insert('j', vec!["🇯", "🗾", "🏒"]);
         emoji_map.insert('k', vec!["🇰", "🎋"]);
         emoji_map.insert('l', vec!["🇱"]);
@@ -222,6 +222,44 @@ impl Framework for ZubotsuFramework {
                     }
                 }
             }
+
+            if message_text == "!megadownbishoy" {
+                let bishoy_emoji00 = EmojiIdentifier {
+                    id: EmojiId(544751298096922626),
+                    name: "megadownbishoy00".to_string(),
+                };
+
+                let bishoy_emoji01 = EmojiIdentifier {
+                    id: EmojiId(544751281978474496),
+                    name: "megadownbishoy01".to_string(),
+                };
+
+                let bishoy_emoji10 = EmojiIdentifier {
+                    id: EmojiId(544751272524251136),
+                    name: "megadownbishoy10".to_string(),
+                };
+
+                let bishoy_emoji11 = EmojiIdentifier {
+                    id: EmojiId(544751261443031061),
+                    name: "megadownbishoy11".to_string(),
+                };
+
+                let _ = message.reply(
+                    format!(
+                        "\n{}{}\n{}{}",
+                        to_str(bishoy_emoji00).as_str(),
+                        to_str(bishoy_emoji01).as_str(),
+                        to_str(bishoy_emoji10).as_str(),
+                        to_str(bishoy_emoji11).as_str()
+                    )
+                    .as_str(),
+                );
+            }
         });
     }
+}
+
+// TODO: use some fancy traits for this or implicits?
+fn to_str(emoji: EmojiIdentifier) -> String {
+    format!("<:{}:{}>", emoji.name, emoji.id)
 }
