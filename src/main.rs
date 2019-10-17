@@ -148,7 +148,7 @@ impl Framework for ZubotsuFramework {
                 if message_text == "stop free software" || message_text == "stop miku" {
                     free_software.store(false, Ordering::SeqCst);
                     let message = message.clone();
-                    let _ = message.reply("Okay, but just know that free software is watching");
+                    let _ = message.reply("Okay, but just know that miku is watching");
                 } else if message_text.contains("linux") && !message_text.contains("gnu") {
                     let message = message.clone();
                     let _ = message.reply(data::GNU_LINUX_COPYPASTA);
@@ -157,7 +157,7 @@ impl Framework for ZubotsuFramework {
                 if message_text == "start free software" || message_text == "start miku" {
                     free_software.store(true, Ordering::SeqCst);
                     let message = message.clone();
-                    let _ = message.reply("*cracks knuckles* it's Free Software time");
+                    let _ = message.reply("*cracks knuckles* it's Miku time");
                 }
             }
             // the one true time
