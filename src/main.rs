@@ -14,8 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Zubotsu.  If not, see <https://www.gnu.org/licenses/>.
 
+
+
+#![feature(custom_attribute, proc_macro)]
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate diesel_codegen;
+extern crate dotenv;
+
 mod data;
 mod emoji;
+
 
 use chrono::prelude::*;
 use log::{debug, info};
@@ -32,6 +42,17 @@ use std::env;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
+mod data;
+mod db;
+
+use diesel::prelude::*;
+use diesel::pg::PgConnection;
+
+mod schema {
+    infer_schema!("dotenv:DATABASE_URL");
+}
+
+use schema::*;
 
 fn main() {
     // Login with a bot token from the environment
@@ -58,6 +79,11 @@ impl ZubotsuFramework {
     fn new() -> Self {
         ZubotsuFramework {
             free_software: Arc::new(AtomicBool::new(false)),
+<<<<<<< HEAD
+=======
+            emoji_map: emoji_map,
+            db_conn: db_conn,
+>>>>>>> add first step
         }
     }
 }
