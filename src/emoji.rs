@@ -1,4 +1,16 @@
+use serenity::model::id::EmojiId;
+
 use std::collections::HashMap;
+
+pub const RUST: EmojiId = EmojiId(539907481095110676);
+pub const HASKELL: EmojiId = EmojiId(540376527674540048);
+
+pub const MEGADOWNBISHOY00: EmojiId = EmojiId(544751298096922626);
+pub const MEGADOWNBISHOY01: EmojiId = EmojiId(544751281978474496);
+pub const MEGADOWNBISHOY10: EmojiId = EmojiId(544751272524251136);
+pub const MEGADOWNBISHOY11: EmojiId = EmojiId(544751261443031061);
+
+/// Emojis
 
 /// Takes a string, and generates a sequence of emojis that spells out that string
 ///

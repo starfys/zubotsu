@@ -74,7 +74,7 @@ impl Framework for ZubotsuFramework {
             if message_text.contains("rust") {
                 // Construct the rust emoji
                 let rust_emoji = EmojiIdentifier {
-                    id: EmojiId(539907481095110676),
+                    id: emoji::RUST, 
                     name: "rust".to_string(),
                 };
                 // Respond with the rust emoji
@@ -88,7 +88,7 @@ impl Framework for ZubotsuFramework {
             {
                 // Construct the haskell emoji
                 let haskell_emoji = EmojiIdentifier {
-                    id: EmojiId(540376527674540048),
+                    id: emoji::HASKELL, 
                     name: "haskell".to_string(),
                 };
                 // Respond with the haskell emoji
@@ -194,22 +194,22 @@ impl Framework for ZubotsuFramework {
             // /***,,,,,,,,,**(%&&%%###########%%%####((((((((((###%%%%%%%%&&&&&&&&&%%##((((((
             if message_text == "!megadownbishoy" {
                 let bishoy_emoji00 = EmojiIdentifier {
-                    id: EmojiId(544751298096922626),
+                    id: emoji::MEGADOWNBISHOY00, 
                     name: "megadownbishoy00".to_string(),
                 };
 
                 let bishoy_emoji01 = EmojiIdentifier {
-                    id: EmojiId(544751281978474496),
+                    id: emoji::MEGADOWNBISHOY01, 
                     name: "megadownbishoy01".to_string(),
                 };
 
                 let bishoy_emoji10 = EmojiIdentifier {
-                    id: EmojiId(544751272524251136),
+                    id: emoji::MEGADOWNBISHOY10, 
                     name: "megadownbishoy10".to_string(),
                 };
 
                 let bishoy_emoji11 = EmojiIdentifier {
-                    id: EmojiId(544751261443031061),
+                    id: emoji::MEGADOWNBISHOY11, 
                     name: "megadownbishoy11".to_string(),
                 };
 
