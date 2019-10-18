@@ -15,5 +15,6 @@
 # along with Zubotsu.  If not, see <https:#www.gnu.org/licenses/>.
 { pkgs ? import <nixpkgs> {} }:
   pkgs.mkShell {
-    buildInputs = with pkgs; [openssl pkgconfig];
+    RUST_LOG="zubotsu=info";
+    buildInputs = with pkgs; [openssl pkgconfig postgresql];
 }
