@@ -51,7 +51,7 @@ impl EventHandler for Handler {}
 
 struct ZubotsuFramework {
     free_software: Arc<AtomicBool>,
-    emoji_map: HashMap<char, Vec<&'static str>>,
+    emoji_map: Arc<HashMap<char, Vec<&'static str>>>,
 }
 
 impl ZubotsuFramework {
@@ -100,16 +100,16 @@ impl ZubotsuFramework {
 
         ZubotsuFramework {
             free_software: Arc::new(AtomicBool::new(false)),
-            emoji_map: emoji_map,
+            emoji_map: Arc::new(emoji_map),
         }
     }
 }
 
 impl Framework for ZubotsuFramework {
-    fn dispatch(&mut self, _context: Context, message: Message, threadpool: &ThreadPool) {
+    fn dispatch(&mut self, context: Context, message: Message, threadpool: &ThreadPool) {
         // Clone a message reference
-        let message = message.clone();
         let free_software = self.free_software.clone();
+        // Clone a reference to the emoji map
         let emoji_map = self.emoji_map.clone();
         // Handle the message in another thread
         threadpool.execute(move || {
@@ -123,7 +123,7 @@ impl Framework for ZubotsuFramework {
                     name: "rust".to_string(),
                 };
                 // Respond with the rust emoji
-                let _ = message.react(rust_emoji);
+                let _ = message.react(&context, rust_emoji);
             }
             // check to see if someone's talking about THE ULTIMATE LIFE FORM^H^H^H^H LANGUAGE
             if message_text.contains("haskell")
@@ -137,40 +137,35 @@ impl Framework for ZubotsuFramework {
                     name: "haskell".to_string(),
                 };
                 // Respond with the haskell emoji
-                let _ = message.react(haskell_emoji);
+                let _ = message.react(&context, haskell_emoji);
             }
             // emulate Kinser
             if message_text.contains("map") {
-                let _ = message.react("🗺");
+                let _ = message.react(&context, "🗺");
             }
             // Miku is the real leader of the gnu project
             if free_software.load(Ordering::SeqCst) {
                 if message_text == "stop free software" || message_text == "stop miku" {
                     free_software.store(false, Ordering::SeqCst);
-                    let message = message.clone();
-                    let _ = message.reply("Okay, but just know that miku is watching");
+                    let _ = message.reply(&context, "Okay, but just know that miku is watching");
                 } else if message_text.contains("linux") && !message_text.contains("gnu") {
-                    let message = message.clone();
-                    let _ = message.reply(data::GNU_LINUX_COPYPASTA);
+                    let _ = message.reply(&context, data::GNU_LINUX_COPYPASTA);
                 }
             } else {
                 if message_text == "start free software" || message_text == "start miku" {
                     free_software.store(true, Ordering::SeqCst);
-                    let message = message.clone();
-                    let _ = message.reply("*cracks knuckles* it's Miku time");
+                    let _ = message.reply(&context, "*cracks knuckles* it's Miku time");
                 }
             }
             // the one true time
             if message_text.contains("time in beats") {
-                let message = message.clone();
-
                 let minute = 60;
                 let hour = 60 * minute;
 
                 let internet_timezone = FixedOffset::east(1 * hour as i32);
 
                 let maboi = Utc::now().with_timezone(&internet_timezone).time();
-                let _ = message.reply(&format!(
+                let _ = message.reply(&context, &format!(
                     "The current Internet Time is @{:.3}.beats",
                     ((maboi.second() + maboi.minute() * minute + maboi.hour() * hour) as f64
                         + (maboi.nanosecond() as f64 / 1_000_000_000.0))
@@ -180,15 +175,13 @@ impl Framework for ZubotsuFramework {
 
             // the meme time
             if message_text.contains("time in scaramuccis") {
-                let message = message.clone();
-
                 let scaramucci_start = Utc.ymd(2017, 7, 25).and_hms(9, 0, 0).timestamp_millis();
                 let scaramucci_end = Utc.ymd(2017, 7, 31).and_hms(9, 0, 0).timestamp_millis();
                 let scaramucci_duration = scaramucci_end - scaramucci_start;
                 let scaramucci_time = (Utc::now().timestamp_millis() - scaramucci_start) as f64
                     / (scaramucci_duration as f64);
 
-                let _ = message.reply(&format!(
+                let _ = message.reply(&context, &format!(
                     "It has been {:.2} scaramuccis since the scaramucci muccied",
                     scaramucci_time
                 ));
@@ -196,10 +189,9 @@ impl Framework for ZubotsuFramework {
 
             // emoji-ify the command
             if message_text.starts_with("zubotsu") {
-                let message = message.clone();
                 let message_text = message_text.trim_start_matches("zubotsu ");
                 if message_text == "" {
-                    let _ = message.reply("Nothing to respond with");
+                    let _ = message.reply(&context, "Nothing to respond with");
                 } else {
                     let mut visited_chars: HashMap<char, usize> = HashMap::new();
 
@@ -212,7 +204,7 @@ impl Framework for ZubotsuFramework {
                                 };
                                 visited_chars.insert(character, emoji_index + 1);
                                 if emoji_index < emoji_list.len() {
-                                    message.react(emoji_list[emoji_index].to_string())
+                                    message.react(&context, emoji_list[emoji_index].to_string())
                                 } else {
                                     Ok(())
                                 }
@@ -283,6 +275,7 @@ impl Framework for ZubotsuFramework {
                 };
 
                 let _ = message.reply(
+                    &context,
                     format!(
                         "\n{}{}\n{}{}",
                         to_str(bishoy_emoji00).as_str(),
