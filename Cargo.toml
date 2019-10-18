@@ -14,5 +14,7 @@ publish = false
 
 [dependencies]
 chrono = "0.4"
-serenity = "0.5"
+log = "0.4"
+pretty_env_logger = "0.3"
+serenity = "0.7"
 threadpool = "1.7"
