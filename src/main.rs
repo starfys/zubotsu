@@ -32,12 +32,12 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc,Mutex};
 use diesel::pg::PgConnection;
 
+mod emoji;
 mod data;
 mod db;
+
 pub mod models;
 pub mod schema;
-
-mod emoji;
 
 fn main() {
     // Login with a bot token from the environment
@@ -219,8 +219,8 @@ impl Framework for ZubotsuFramework {
                             Ok(users) => {
                                 // do we want to move this formatting code out to a separate funtion
                                 let format = users.iter().enumerate().map(|(index, karma_user)| {
-                                    // let unsafe_user_id: u64 =
-                                    //     unsafe { mem::transmute(karma_user.user_id) };
+                                    // this is technically unsafe transform but due to knowledge about the id system of discord
+                                    // we can ignore this for now (until 2084)
                                     let user_id = karma_user.user_id as u64;
                                     let user =
                                         match UserId::to_user(UserId(user_id), &context) {
