@@ -1,4 +1,4 @@
-#![feature(custom_attribute, proc_macro)]
+#![feature(custom_attribute)]
 // Copyright 2019 Steven Sheffey
 // This file is part of Zubotsu.
 
