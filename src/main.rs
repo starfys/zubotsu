@@ -1,3 +1,4 @@
+#![feature(custom_attribute, proc_macro)]
 // Copyright 2019 Steven Sheffey
 // This file is part of Zubotsu.
 
@@ -13,11 +14,8 @@
 
 // You should have received a copy of the GNU General Public License
 // along with Zubotsu.  If not, see <https://www.gnu.org/licenses/>.
-
-#![feature(custom_attribute, proc_macro)]
 #[macro_use]
 extern crate diesel;
-extern crate dotenv;
 
 use chrono::prelude::*;
 use log::{debug, error, info};
@@ -28,11 +26,11 @@ use serenity::model::id::UserId;
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
 use threadpool::ThreadPool;
-
 use std::env;
 use std::mem;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc,Mutex};
+use diesel::pg::PgConnection;
 
 mod data;
 mod db;
@@ -40,9 +38,6 @@ pub mod models;
 pub mod schema;
 
 mod emoji;
-
-use diesel::pg::PgConnection;
-use std::sync::Mutex;
 
 fn main() {
     // Login with a bot token from the environment
@@ -224,13 +219,14 @@ impl Framework for ZubotsuFramework {
                             Ok(users) => {
                                 // do we want to move this formatting code out to a separate funtion
                                 let format = users.iter().enumerate().map(|(index, karma_user)| {
-                                    let unsafe_user_id: u64 =
-                                        unsafe { mem::transmute(karma_user.user_id) };
+                                    // let unsafe_user_id: u64 =
+                                    //     unsafe { mem::transmute(karma_user.user_id) };
+                                    let user_id = karma_user.user_id as u64;
                                     let user =
-                                        match UserId::to_user(UserId(unsafe_user_id), &context) {
+                                        match UserId::to_user(UserId(user_id), &context) {
                                             Err(e) => {
-                                                error!("unknown id {} {}", unsafe_user_id, e);
-                                                format!("unknown id {}", unsafe_user_id)
+                                                error!("unknown id {} {}", user_id, e);
+                                                format!("unknown id {}", user_id)
                                             }
                                             Ok(user) => user.name,
                                         };

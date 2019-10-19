@@ -42,9 +42,11 @@ pub fn establish_connection() -> Result<PgConnection, Error> {
 pub fn upsert_user_karma(pgconn: &PgConnection, user_id: u64, karma: i32) -> Result<(), Error> {
     use super::schema::users;
 
-    let unsafe_user_id: i64 = unsafe { mem::transmute(user_id) };
+    // this is technically unsafe transform but due to knowledge about the id system of discord
+    // we can ignore this for now (until 2084)
+    let user_id = user_id as i64;
     let user = super::models::User {
-        user_id: &unsafe_user_id,
+        user_id: &user_id,
         karma: Some(&karma),
     };
 
@@ -76,9 +78,11 @@ pub fn leaderboards(pgconn: &PgConnection) -> Result<Vec<ReadUser>, Error> {
 
 pub fn get_karma_for_id(pgconn: &PgConnection, discord_user_id: u64) -> Result<i32, Error> {
     use super::schema::users::dsl::*;
-    let unsafe_user_id: i64 = unsafe { mem::transmute(discord_user_id) };
+    // this is technically unsafe transform but due to knowledge about the id system of discord
+    // we can ignore this for now (until 2084)
+    let discord_user_id = discord_user_id as i64;
     match users
-        .filter(user_id.eq(unsafe_user_id))
+        .filter(user_id.eq(discord_user_id))
         .limit(1)
         .load::<ReadUser>(pgconn)
     {
