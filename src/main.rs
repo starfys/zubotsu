@@ -41,7 +41,7 @@ pub mod models;
 pub mod schema;
 
 fn main() {
-    dotenv::ok();
+    dotenv()::ok();
     // Login with a bot token from the environment
     let mut client = Client::new(&env::var("DISCORD_TOKEN").expect("token"), Handler)
         .expect("Error creating client");
