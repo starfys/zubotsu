@@ -18,6 +18,7 @@
 extern crate diesel;
 
 use chrono::prelude::*;
+use dotenv::dotenv;
 use log::{debug, error, info};
 use serenity::client::Client;
 use serenity::framework::Framework;
@@ -40,6 +41,7 @@ pub mod models;
 pub mod schema;
 
 fn main() {
+    dotenv::ok();
     // Login with a bot token from the environment
     let mut client = Client::new(&env::var("DISCORD_TOKEN").expect("token"), Handler)
         .expect("Error creating client");
