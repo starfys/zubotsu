@@ -1,6 +1,5 @@
 -- Your SQL goes here
-
 create table users (
-    name varchar(256) primary key,
+    user_id bigint primary key,
     karma int
 );

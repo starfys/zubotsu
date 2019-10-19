@@ -63,11 +63,10 @@ pub fn emojify(message: &str) -> Vec<&str> {
     emoji_map.insert('2', vec!["2⃣"]);
     emoji_map.insert('1', vec!["1⃣"]);
     emoji_map.insert('0', vec!["0⃣"]);
-    
 
     // TODO: may make it easy to just make this a hashset
     let mut visited_chars: HashMap<char, usize> = HashMap::new();
-    
+
     let mut emojis = Vec::new();
     for character in message.chars() {
         if let Some(emoji_list) = emoji_map.get(&character) {

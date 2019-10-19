@@ -2,4 +2,25 @@
 Why? Because we live in a society
 
 # Documentation
-pulls both arms outwards in front of my chest and pumps them behind my back, repeats this motion in a smaller range of motion down to my hips two times once more all while sliding my legs in a faux walking motion, claps my hands together in front of me while both my knees knock together, pumps my arms downward, pronating my wrists and abducting my fingers outward while crossing my legs back and forth, repeats this motion again two times while keeping my shoulders low and hunching over, does finger gun with right hand with left hand bent on my hip while looking directly forward and putting my left leg forward then crossing my arms and leaning back a little while bending my knees at an angle
+In order to run you need to have a postgres instance running that rust can talk to, 
+this is best done by creating an .env folder and having an environment variable
+
+```sh
+DATABASE_URL=postgresql://127.0.0.1:5432/dbname?user=dbuser&password=dbpassword
+RUST_LOG=debug
+DISCORD_TOKEN=MYTOKEN
+```
+
+if it is your first time running the postgres side of the server you will need to run the following commands
+```sh
+cargo install diesel_cli --no-default-features --features postgres
+diesel migration run
+```
+
+if you want to change the schema you will need to 
+1. change the `Users` model in models.rs
+2. run a command `diesel migration generate my_new_migration_name` 
+3. fill the `up.sql` and `down.sql`
+4. run the `disel migration run`
+
+this should add some new things to the `schemas.rs` which will give you compile time errors with the associated model if you try to add the macros

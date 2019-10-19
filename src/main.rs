@@ -14,45 +14,35 @@
 // You should have received a copy of the GNU General Public License
 // along with Zubotsu.  If not, see <https://www.gnu.org/licenses/>.
 
-
-
 #![feature(custom_attribute, proc_macro)]
 #[macro_use]
 extern crate diesel;
-#[macro_use]
-extern crate diesel_codegen;
 extern crate dotenv;
 
-mod data;
-mod emoji;
-
-
 use chrono::prelude::*;
-use log::{debug, info};
+use log::{debug, error, info};
 use serenity::client::Client;
 use serenity::framework::Framework;
 use serenity::model::channel::Message;
-use serenity::model::id::EmojiId;
+use serenity::model::id::UserId;
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
-use std::collections::HashMap;
 use threadpool::ThreadPool;
 
 use std::env;
+use std::mem;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 mod data;
 mod db;
+pub mod models;
+pub mod schema;
 
-use diesel::prelude::*;
+mod emoji;
+
 use diesel::pg::PgConnection;
-
-mod schema {
-    infer_schema!("dotenv:DATABASE_URL");
-}
-
-use schema::*;
+use std::sync::Mutex;
 
 fn main() {
     // Login with a bot token from the environment
@@ -73,17 +63,17 @@ impl EventHandler for Handler {}
 
 struct ZubotsuFramework {
     free_software: Arc<AtomicBool>,
+    // dao: &'T db::DAO<'T>,
+    db_conn: Arc<Mutex<PgConnection>>,
 }
 
 impl ZubotsuFramework {
     fn new() -> Self {
+        let conn = db::establish_connection().expect("could not establish connection");
+
         ZubotsuFramework {
             free_software: Arc::new(AtomicBool::new(false)),
-<<<<<<< HEAD
-=======
-            emoji_map: emoji_map,
-            db_conn: db_conn,
->>>>>>> add first step
+            db_conn: Arc::new(Mutex::new(conn)),
         }
     }
 }
@@ -92,6 +82,7 @@ impl Framework for ZubotsuFramework {
     fn dispatch(&mut self, context: Context, message: Message, threadpool: &ThreadPool) {
         // Clone a message reference
         let free_software = self.free_software.clone();
+        let conn = self.db_conn.clone();
         // Handle the message in another thread
         threadpool.execute(move || {
             // Convert the message to lowercase for string matching
@@ -100,7 +91,7 @@ impl Framework for ZubotsuFramework {
             if message_text.contains("rust") {
                 // Construct the rust emoji
                 let rust_emoji = EmojiIdentifier {
-                    id: emoji::RUST, 
+                    id: emoji::RUST,
                     name: "rust".to_string(),
                 };
                 // Respond with the rust emoji
@@ -114,7 +105,7 @@ impl Framework for ZubotsuFramework {
             {
                 // Construct the haskell emoji
                 let haskell_emoji = EmojiIdentifier {
-                    id: emoji::HASKELL, 
+                    id: emoji::HASKELL,
                     name: "haskell".to_string(),
                 };
                 // Respond with the haskell emoji
@@ -146,12 +137,15 @@ impl Framework for ZubotsuFramework {
                 let internet_timezone = FixedOffset::east(1 * hour as i32);
 
                 let maboi = Utc::now().with_timezone(&internet_timezone).time();
-                let _ = message.reply(&context, &format!(
-                    "The current Internet Time is @{:.3}.beats",
-                    ((maboi.second() + maboi.minute() * minute + maboi.hour() * hour) as f64
-                        + (maboi.nanosecond() as f64 / 1_000_000_000.0))
-                        / 86.4
-                ));
+                let _ = message.reply(
+                    &context,
+                    &format!(
+                        "The current Internet Time is @{:.3}.beats",
+                        ((maboi.second() + maboi.minute() * minute + maboi.hour() * hour) as f64
+                            + (maboi.nanosecond() as f64 / 1_000_000_000.0))
+                            / 86.4
+                    ),
+                );
             }
 
             // the meme time
@@ -162,10 +156,13 @@ impl Framework for ZubotsuFramework {
                 let scaramucci_time = (Utc::now().timestamp_millis() - scaramucci_start) as f64
                     / (scaramucci_duration as f64);
 
-                let _ = message.reply(&context, &format!(
-                    "It has been {:.2} scaramuccis since the scaramucci muccied",
-                    scaramucci_time
-                ));
+                let _ = message.reply(
+                    &context,
+                    &format!(
+                        "It has been {:.2} scaramuccis since the scaramucci muccied",
+                        scaramucci_time
+                    ),
+                );
             }
 
             // emoji-ify the command
@@ -175,28 +172,28 @@ impl Framework for ZubotsuFramework {
                     let _ = message.reply(&context, "Nothing to respond with");
                 } else {
                     for emoji in emoji::emojify(message_text) {
-                        let _ = message.react(&context,  emoji);
+                        let _ = message.react(&context, emoji);
                     }
                 }
             }
             if message_text == "!megadownbishoy" {
                 let bishoy_emoji00 = EmojiIdentifier {
-                    id: emoji::MEGADOWNBISHOY00, 
+                    id: emoji::MEGADOWNBISHOY00,
                     name: "megadownbishoy00".to_string(),
                 };
 
                 let bishoy_emoji01 = EmojiIdentifier {
-                    id: emoji::MEGADOWNBISHOY01, 
+                    id: emoji::MEGADOWNBISHOY01,
                     name: "megadownbishoy01".to_string(),
                 };
 
                 let bishoy_emoji10 = EmojiIdentifier {
-                    id: emoji::MEGADOWNBISHOY10, 
+                    id: emoji::MEGADOWNBISHOY10,
                     name: "megadownbishoy10".to_string(),
                 };
 
                 let bishoy_emoji11 = EmojiIdentifier {
-                    id: emoji::MEGADOWNBISHOY11, 
+                    id: emoji::MEGADOWNBISHOY11,
                     name: "megadownbishoy11".to_string(),
                 };
 
@@ -211,6 +208,94 @@ impl Framework for ZubotsuFramework {
                     )
                     .as_str(),
                 );
+            }
+
+            // karmabot +69 @(apply #(lube %) (your butt))
+            if message_text.starts_with("karmabot") {
+                // let's get access to the db conn
+                let locked_conn = conn.lock().unwrap();
+                let command = message_text.split(" ").collect::<Vec<&str>>();
+                // karmabot leaderboards
+                // karmabot @(apply #(lube %) (your butt))
+                if command.len() == 2 {
+                    if command[1] == "leaderboards" {
+                        match db::leaderboards(&*locked_conn) {
+                            Err(err) => error!("{}", err),
+                            Ok(users) => {
+                                // do we want to move this formatting code out to a separate funtion
+                                let format = users.iter().enumerate().map(|(index, karma_user)| {
+                                    let unsafe_user_id: u64 =
+                                        unsafe { mem::transmute(karma_user.user_id) };
+                                    let user =
+                                        match UserId::to_user(UserId(unsafe_user_id), &context) {
+                                            Err(e) => {
+                                                error!("unknown id {} {}", unsafe_user_id, e);
+                                                format!("unknown id {}", unsafe_user_id)
+                                            }
+                                            Ok(user) => user.name,
+                                        };
+                                    let karma_amount = match karma_user.karma {
+                                        Some(karma_amount) => karma_amount,
+                                        None => 0,
+                                    };
+                                    format!("{}. {} : {}", index + 1, user.to_owned(), karma_amount)
+                                });
+                                // TODO: update this so that we collect using `.map(|s| &**s)`
+                                // instead so we can borrow these strings
+                                match message.reply(
+                                    &context,
+                                    format!(
+                                        "High Scores \n{}",
+                                        format.collect::<Vec<String>>().join("\n")
+                                    ),
+                                ) {
+                                    Err(e) => error!("{}", e),
+                                    Ok(_) => (),
+                                }
+                            }
+                        }
+                        // TODO: do we want to only have the ability to look at your own karma, or anyone's on the server
+                    } else if message.mentions.len() == 1 {
+                        let result = db::get_karma_for_id(&*locked_conn, message.mentions[0].id.0);
+                        match result {
+                            Err(err) => {
+                                error!("{}", err);
+                                match message.reply(&context, "Could not retrieve data for user {}") {
+                                    Err(err) => error!("{}", err),
+                                    Ok(_) => (),
+                                }
+                            }
+                            Ok(karma) => match message
+                                .reply(&context, format!("Here's their karma {}", karma))
+                            {
+                                Err(err) => error!("{}", err),
+                                Ok(_) => (),
+                            },
+                        }
+                    }
+                // karmabot +69 @(apply #(lube %) (your butt))
+                } else if command.len() > 2 {
+                    let karma_amount = match command[1].replace("+", "").parse::<i32>() {
+                        Err(err) => {
+                            error!("{}", err);
+                            0
+                        }
+                        Ok(value) => value,
+                    };
+                    if karma_amount == 0 {
+                        match message.reply(&context, format!("invalid command {}", command[1])) {
+                            Err(err) => error!("{}", err),
+                            Ok(_) => (),
+                        };
+                    } else {
+                        for mention in message.mentions {
+                            match db::upsert_user_karma(&*locked_conn, mention.id.0, karma_amount) {
+                                Err(err) => error!("{}", err),
+                                _ => debug!("added {} karma for {}", karma_amount, mention.id.0),
+                            };
+                        }
+                    }
+                }
             }
         });
     }
