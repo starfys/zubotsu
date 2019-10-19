@@ -2,7 +2,6 @@ use super::models::*;
 use diesel::pg::upsert::*;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use dotenv::dotenv;
 use std::env;
 use std::io::Error;
 use std::io::ErrorKind;
@@ -11,7 +10,6 @@ use std::mem;
 // TODO: rewrite as DAO instead of separate functions?
 
 pub fn establish_connection() -> Result<PgConnection, Error> {
-    dotenv().ok();
 
     let database_url = env::var("DATABASE_URL")
         .map_err(|_error| Error::new(ErrorKind::InvalidData, "DATABASE_URL must be set"))?;
