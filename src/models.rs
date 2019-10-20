@@ -1,4 +1,4 @@
-use super::schema::users;
+use crate::schema::users;
 
 #[derive(Insertable, Associations, AsChangeset)]
 #[table_name = "users"]

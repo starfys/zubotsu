@@ -1,11 +1,10 @@
-use super::models::*;
+use crate::models::*;
 use diesel::pg::upsert::*;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use std::env;
 use std::io::Error;
 use std::io::ErrorKind;
-use std::mem;
 
 // TODO: rewrite as DAO instead of separate functions?
 
