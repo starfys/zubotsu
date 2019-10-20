@@ -17,41 +17,52 @@
 #[macro_use]
 extern crate diesel;
 
+mod data;
+mod db;
+mod emoji;
+pub mod models;
+pub mod schema;
+
 use chrono::prelude::*;
+use diesel::pg::PgConnection;
 use dotenv::dotenv;
-use log::{debug, error, info};
+use log::{debug, error};
 use serenity::client::Client;
 use serenity::framework::Framework;
 use serenity::model::channel::Message;
 use serenity::model::id::UserId;
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
-use threadpool::ThreadPool;
 use std::env;
-use std::mem;
+use std::error::Error;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc,Mutex};
-use diesel::pg::PgConnection;
+use std::sync::{Arc, Mutex};
+use threadpool::ThreadPool;
 
-mod emoji;
-mod data;
-mod db;
+fn main() -> Result<(), Box<dyn Error>> {
+    // Initialize the logger
+    pretty_env_logger::init();
 
-pub mod models;
-pub mod schema;
-
-fn main() {
+    // Import environment variables from .env
     dotenv().ok();
-    // Login with a bot token from the environment
-    let mut client = Client::new(&env::var("DISCORD_TOKEN").expect("token"), Handler)
-        .expect("Error creating client");
-    // Set the client to use our dank rust framework
-    client.with_framework(ZubotsuFramework::new());
+    // Get the database URL
+    let database_url = env::var("DATABASE_URL")?;
+    // Get the bot token
+    let bot_token = env::var("DISCORD_TOKEN")?;
 
-    // start listening for events by starting one shard
-    if let Err(why) = client.start_autosharded() {
-        println!("An error occurred while running the client: {:?}", why);
-    }
+    // Login with a bot token from the environment
+    let mut client = Client::new(&bot_token, Handler)?;
+
+    // Initialize the framework
+    let framework = ZubotsuFramework::new(&database_url)?;
+
+    // Set the client to use our dank rust framework
+    client.with_framework(framework);
+
+    // Start the client
+    client.start_autosharded()?;
+
+    Ok(())
 }
 
 struct Handler;
@@ -65,13 +76,13 @@ struct ZubotsuFramework {
 }
 
 impl ZubotsuFramework {
-    fn new() -> Self {
-        let conn = db::establish_connection().expect("could not establish connection");
+    fn new(database_url: &str) -> Result<Self, diesel::ConnectionError> {
+        let conn = db::establish_connection(database_url)?;
 
-        ZubotsuFramework {
+        Ok(ZubotsuFramework {
             free_software: Arc::new(AtomicBool::new(false)),
             db_conn: Arc::new(Mutex::new(conn)),
-        }
+        })
     }
 }
 
@@ -120,18 +131,16 @@ impl Framework for ZubotsuFramework {
                 } else if message_text.contains("linux") && !message_text.contains("gnu") {
                     let _ = message.reply(&context, data::GNU_LINUX_COPYPASTA);
                 }
-            } else {
-                if message_text == "start free software" || message_text == "start miku" {
-                    free_software.store(true, Ordering::SeqCst);
-                    let _ = message.reply(&context, "*cracks knuckles* it's Miku time");
-                }
+            } else if message_text == "start free software" || message_text == "start miku" {
+                free_software.store(true, Ordering::SeqCst);
+                let _ = message.reply(&context, "*cracks knuckles* it's Miku time");
             }
             // the one true time
             if message_text.contains("time in beats") {
                 let minute = 60;
                 let hour = 60 * minute;
 
-                let internet_timezone = FixedOffset::east(1 * hour as i32);
+                let internet_timezone = FixedOffset::east(hour as i32);
 
                 let maboi = Utc::now().with_timezone(&internet_timezone).time();
                 let _ = message.reply(
@@ -211,7 +220,7 @@ impl Framework for ZubotsuFramework {
             if message_text.starts_with("karmabot") {
                 // let's get access to the db conn
                 let locked_conn = conn.lock().unwrap();
-                let command = message_text.split(" ").collect::<Vec<&str>>();
+                let command = message_text.split(' ').collect::<Vec<&str>>();
                 // karmabot leaderboards
                 // karmabot @(apply #(lube %) (your butt))
                 if command.len() == 2 {
@@ -224,51 +233,51 @@ impl Framework for ZubotsuFramework {
                                     // this is technically unsafe transform but due to knowledge about the id system of discord
                                     // we can ignore this for now (until 2084)
                                     let user_id = karma_user.user_id as u64;
-                                    let user =
-                                        match UserId::to_user(UserId(user_id), &context) {
-                                            Err(e) => {
-                                                error!("unknown id {} {}", user_id, e);
-                                                format!("unknown id {}", user_id)
-                                            }
-                                            Ok(user) => user.name,
-                                        };
+                                    let user = match UserId::to_user(UserId(user_id), &context) {
+                                        Err(e) => {
+                                            error!("unknown id {} {}", user_id, e);
+                                            format!("unknown id {}", user_id)
+                                        }
+                                        Ok(user) => user.name,
+                                    };
                                     let karma_amount = match karma_user.karma {
                                         Some(karma_amount) => karma_amount,
                                         None => 0,
                                     };
-                                    format!("{}. {} : {}", index + 1, user.to_owned(), karma_amount)
+                                    format!("{}. {} : {}", index + 1, user, karma_amount)
                                 });
                                 // TODO: update this so that we collect using `.map(|s| &**s)`
                                 // instead so we can borrow these strings
-                                match message.reply(
+                                if let Err(e) = message.reply(
                                     &context,
                                     format!(
                                         "High Scores \n{}",
                                         format.collect::<Vec<String>>().join("\n")
                                     ),
                                 ) {
-                                    Err(e) => error!("{}", e),
-                                    Ok(_) => (),
+                                    error!("{}", e);
                                 }
                             }
                         }
-                        // TODO: do we want to only have the ability to look at your own karma, or anyone's on the server
+                    // TODO: do we want to only have the ability to look at your own karma, or anyone's on the server
                     } else if message.mentions.len() == 1 {
                         let result = db::get_karma_for_id(&*locked_conn, message.mentions[0].id.0);
                         match result {
-                            Err(err) => {
-                                error!("{}", err);
-                                match message.reply(&context, "Could not retrieve data for user {}") {
-                                    Err(err) => error!("{}", err),
-                                    Ok(_) => (),
+                            Ok(karma) => {
+                                if let Err(err) =
+                                    message.reply(&context, format!("Here's their karma {}", karma))
+                                {
+                                    error!("{}", err);
                                 }
                             }
-                            Ok(karma) => match message
-                                .reply(&context, format!("Here's their karma {}", karma))
-                            {
-                                Err(err) => error!("{}", err),
-                                Ok(_) => (),
-                            },
+                            Err(err) => {
+                                error!("{}", err);
+                                if let Err(err) =
+                                    message.reply(&context, "Could not retrieve data for user {}")
+                                {
+                                    error!("{}", err);
+                                }
+                            }
                         }
                     }
                 // karmabot +69 @(apply #(lube %) (your butt))
@@ -281,9 +290,10 @@ impl Framework for ZubotsuFramework {
                         Ok(value) => value,
                     };
                     if karma_amount == 0 {
-                        match message.reply(&context, format!("invalid command {}", command[1])) {
-                            Err(err) => error!("{}", err),
-                            Ok(_) => (),
+                        if let Err(err) =
+                            message.reply(&context, format!("invalid command {}", command[1]))
+                        {
+                            error!("{}", err);
                         };
                     } else {
                         for mention in message.mentions {

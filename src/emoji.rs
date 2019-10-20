@@ -1,5 +1,6 @@
-use serenity::model::id::EmojiId;
+#![allow(clippy::unreadable_literal)]
 
+use serenity::model::id::EmojiId;
 use std::collections::HashMap;
 
 pub const RUST: EmojiId = EmojiId(539907481095110676);
