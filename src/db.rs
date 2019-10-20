@@ -1,4 +1,4 @@
-use crate::models::{User, ReadUser};
+use crate::models::{ReadUser, User};
 use crate::schema;
 use diesel::pg::upsert::*;
 use diesel::pg::PgConnection;
@@ -9,7 +9,6 @@ use diesel::prelude::*;
 pub fn establish_connection(database_url: &str) -> Result<PgConnection, diesel::ConnectionError> {
     PgConnection::establish(&database_url)
 }
-
 
 // postgresql integer types are kind of messy
 //  Name 	            Storage Size 	Description 	                Range
@@ -27,7 +26,11 @@ pub fn establish_connection(database_url: &str) -> Result<PgConnection, diesel::
 // - numeric this might fit the right signing, but not sure how rust handles arbitrary buffers
 // - bigserial this might fit both but might have weird odities with updates
 // eh at the end of the day this should be okay
-pub fn upsert_user_karma(pgconn: &PgConnection, user_id: u64, karma: i32) -> Result<(), diesel::result::Error> {
+pub fn upsert_user_karma(
+    pgconn: &PgConnection,
+    user_id: u64,
+    karma: i32,
+) -> Result<(), diesel::result::Error> {
     use schema::users;
 
     // this is technically unsafe transform but due to knowledge about the id system of discord
@@ -52,7 +55,10 @@ pub fn leaderboards(pgconn: &PgConnection) -> Result<Vec<ReadUser>, diesel::resu
     users.order(karma.desc()).limit(10).load::<ReadUser>(pgconn)
 }
 
-pub fn get_karma_for_id(pgconn: &PgConnection, discord_user_id: u64) -> Result<i32, diesel::result::Error> {
+pub fn get_karma_for_id(
+    pgconn: &PgConnection,
+    discord_user_id: u64,
+) -> Result<i32, diesel::result::Error> {
     use schema::users::dsl::*;
     // this is technically unsafe transform but due to knowledge about the id system of discord
     // we can ignore this for now (until 2084)
@@ -64,8 +70,7 @@ pub fn get_karma_for_id(pgconn: &PgConnection, discord_user_id: u64) -> Result<i
         .map(|user_result| {
             if user_result.len() == 1 {
                 user_result[0].karma.unwrap_or(0)
-            }
-            else {
+            } else {
                 0
             }
         })

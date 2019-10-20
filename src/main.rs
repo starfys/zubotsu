@@ -17,13 +17,14 @@
 #[macro_use]
 extern crate diesel;
 
-mod emoji;
 mod data;
 mod db;
+mod emoji;
 pub mod models;
 pub mod schema;
 
 use chrono::prelude::*;
+use diesel::pg::PgConnection;
 use dotenv::dotenv;
 use log::{debug, error};
 use serenity::client::Client;
@@ -32,13 +33,11 @@ use serenity::model::channel::Message;
 use serenity::model::id::UserId;
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
-use threadpool::ThreadPool;
 use std::env;
 use std::error::Error;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc,Mutex};
-use diesel::pg::PgConnection;
-
+use std::sync::{Arc, Mutex};
+use threadpool::ThreadPool;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Initialize the logger
@@ -50,19 +49,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     let database_url = env::var("DATABASE_URL")?;
     // Get the bot token
     let bot_token = env::var("DISCORD_TOKEN")?;
-    
+
     // Login with a bot token from the environment
     let mut client = Client::new(&bot_token, Handler)?;
-    
+
     // Initialize the framework
     let framework = ZubotsuFramework::new(&database_url)?;
-    
+
     // Set the client to use our dank rust framework
     client.with_framework(framework);
 
     // Start the client
     client.start_autosharded()?;
-    
+
     Ok(())
 }
 
@@ -133,8 +132,8 @@ impl Framework for ZubotsuFramework {
                     let _ = message.reply(&context, data::GNU_LINUX_COPYPASTA);
                 }
             } else if message_text == "start free software" || message_text == "start miku" {
-                    free_software.store(true, Ordering::SeqCst);
-                    let _ = message.reply(&context, "*cracks knuckles* it's Miku time");
+                free_software.store(true, Ordering::SeqCst);
+                let _ = message.reply(&context, "*cracks knuckles* it's Miku time");
             }
             // the one true time
             if message_text.contains("time in beats") {
@@ -234,14 +233,13 @@ impl Framework for ZubotsuFramework {
                                     // this is technically unsafe transform but due to knowledge about the id system of discord
                                     // we can ignore this for now (until 2084)
                                     let user_id = karma_user.user_id as u64;
-                                    let user =
-                                        match UserId::to_user(UserId(user_id), &context) {
-                                            Err(e) => {
-                                                error!("unknown id {} {}", user_id, e);
-                                                format!("unknown id {}", user_id)
-                                            }
-                                            Ok(user) => user.name,
-                                        };
+                                    let user = match UserId::to_user(UserId(user_id), &context) {
+                                        Err(e) => {
+                                            error!("unknown id {} {}", user_id, e);
+                                            format!("unknown id {}", user_id)
+                                        }
+                                        Ok(user) => user.name,
+                                    };
                                     let karma_amount = match karma_user.karma {
                                         Some(karma_amount) => karma_amount,
                                         None => 0,
@@ -261,18 +259,22 @@ impl Framework for ZubotsuFramework {
                                 }
                             }
                         }
-                        // TODO: do we want to only have the ability to look at your own karma, or anyone's on the server
+                    // TODO: do we want to only have the ability to look at your own karma, or anyone's on the server
                     } else if message.mentions.len() == 1 {
                         let result = db::get_karma_for_id(&*locked_conn, message.mentions[0].id.0);
                         match result {
-                            Ok(karma) => if let Err(err) = message
-                                .reply(&context, format!("Here's their karma {}", karma))
-                            {
-                                error!("{}", err);
-                            },
+                            Ok(karma) => {
+                                if let Err(err) =
+                                    message.reply(&context, format!("Here's their karma {}", karma))
+                                {
+                                    error!("{}", err);
+                                }
+                            }
                             Err(err) => {
                                 error!("{}", err);
-                                if let Err(err) = message.reply(&context, "Could not retrieve data for user {}") {
+                                if let Err(err) =
+                                    message.reply(&context, "Could not retrieve data for user {}")
+                                {
                                     error!("{}", err);
                                 }
                             }
@@ -288,7 +290,9 @@ impl Framework for ZubotsuFramework {
                         Ok(value) => value,
                     };
                     if karma_amount == 0 {
-                        if let Err(err) = message.reply(&context, format!("invalid command {}", command[1])) {
+                        if let Err(err) =
+                            message.reply(&context, format!("invalid command {}", command[1]))
+                        {
                             error!("{}", err);
                         };
                     } else {
