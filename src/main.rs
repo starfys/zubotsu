@@ -55,7 +55,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut client = Client::new(&bot_token, Handler)?;
     
     // Initialize the framework
-    let framework = ZubotsuFramework::new(&database_url);
+    let framework = ZubotsuFramework::new(&database_url)?;
     
     // Set the client to use our dank rust framework
     client.with_framework(framework);
@@ -77,13 +77,13 @@ struct ZubotsuFramework {
 }
 
 impl ZubotsuFramework {
-    fn new(database_url: &str) -> Self {
-        let conn = db::establish_connection(database_url).expect("could not establish connection");
+    fn new(database_url: &str) -> Result<Self, diesel::ConnectionError> {
+        let conn = db::establish_connection(database_url)?;
 
-        ZubotsuFramework {
+        Ok(ZubotsuFramework {
             free_software: Arc::new(AtomicBool::new(false)),
             db_conn: Arc::new(Mutex::new(conn)),
-        }
+        })
     }
 }
 
