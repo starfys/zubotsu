@@ -18,8 +18,8 @@ log = "0.4"
 pretty_env_logger = "0.3"
 serenity = "0.7"
 threadpool = "1.7"
-diesel = { version = "1.4.3", features = ["postgres"] }
-dotenv = "0.10.0"
+diesel = { version = "1.4", features = ["postgres"] }
+dotenv = "0.10"
 
 [profile.release]
 lto = true
