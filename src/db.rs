@@ -3,16 +3,13 @@ use crate::schema;
 use diesel::pg::upsert::*;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use std::env;
-use std::error::Error;
 
 // TODO: rewrite as DAO instead of separate functions?
 
-pub fn establish_connection() -> Result<PgConnection, Box<dyn Error>> {
-    let database_url = env::var("DATABASE_URL")?;
-    let conn = PgConnection::establish(&database_url)?;
-    Ok(conn)
+pub fn establish_connection(database_url: &str) -> Result<PgConnection, diesel::ConnectionError> {
+    PgConnection::establish(&database_url)
 }
+
 
 // postgresql integer types are kind of messy
 //  Name 	            Storage Size 	Description 	                Range

@@ -34,23 +34,33 @@ use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
 use threadpool::ThreadPool;
 use std::env;
+use std::error::Error;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc,Mutex};
 use diesel::pg::PgConnection;
 
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
+    // Import environment variables from .env
     dotenv().ok();
+    // Get the database URL
+    let database_url = env::var("DATABASE_URL")?;
+    // Get the bot token
+    let bot_token = env::var("DISCORD_TOKEN")?;
+    
     // Login with a bot token from the environment
-    let mut client = Client::new(&env::var("DISCORD_TOKEN").expect("token"), Handler)
-        .expect("Error creating client");
+    let mut client = Client::new(&bot_token, Handler)?;
+    
+    // Initialize the framework
+    let framework = ZubotsuFramework::new(&database_url);
+    
     // Set the client to use our dank rust framework
-    client.with_framework(ZubotsuFramework::new());
+    client.with_framework(framework);
 
-    // start listening for events by starting one shard
-    if let Err(why) = client.start_autosharded() {
-        println!("An error occurred while running the client: {:?}", why);
-    }
+    // Start the client
+    client.start_autosharded()?;
+    
+    Ok(())
 }
 
 struct Handler;
@@ -64,8 +74,8 @@ struct ZubotsuFramework {
 }
 
 impl ZubotsuFramework {
-    fn new() -> Self {
-        let conn = db::establish_connection().expect("could not establish connection");
+    fn new(database_url: &str) -> Self {
+        let conn = db::establish_connection(database_url).expect("could not establish connection");
 
         ZubotsuFramework {
             free_software: Arc::new(AtomicBool::new(false)),
