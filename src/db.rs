@@ -75,7 +75,7 @@ pub fn leaderboards(pgconn: &PgConnection) -> Result<Vec<ReadUser>, Error> {
 }
 
 pub fn get_karma_for_id(pgconn: &PgConnection, discord_user_id: u64) -> Result<i32, Error> {
-    use super::schema::users::dsl::*;
+    use schema::users::dsl::*;
     // this is technically unsafe transform but due to knowledge about the id system of discord
     // we can ignore this for now (until 2084)
     let discord_user_id = discord_user_id as i64;
