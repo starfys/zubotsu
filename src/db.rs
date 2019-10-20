@@ -4,21 +4,15 @@ use diesel::pg::upsert::*;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use std::env;
-use std::io::Error;
-use std::io::ErrorKind;
+use std::error::Error;
+use std::io;
 
 // TODO: rewrite as DAO instead of separate functions?
 
-pub fn establish_connection() -> Result<PgConnection, Error> {
-
-    let database_url = env::var("DATABASE_URL")
-        .map_err(|_error| Error::new(ErrorKind::InvalidData, "DATABASE_URL must be set"))?;
-    PgConnection::establish(&database_url).map_err(|_error| {
-        Error::new(
-            ErrorKind::InvalidData,
-            format!("Error connecting to {}", database_url),
-        )
-    })
+pub fn establish_connection() -> Result<PgConnection, Box<dyn Error>> {
+    let database_url = env::var("DATABASE_URL")?;
+    let conn = PgConnection::establish(&database_url)?;
+    Ok(conn)
 }
 
 // postgresql integer types are kind of messy
@@ -37,7 +31,7 @@ pub fn establish_connection() -> Result<PgConnection, Error> {
 // - numeric this might fit the right signing, but not sure how rust handles arbitrary buffers
 // - bigserial this might fit both but might have weird odities with updates
 // eh at the end of the day this should be okay
-pub fn upsert_user_karma(pgconn: &PgConnection, user_id: u64, karma: i32) -> Result<(), Error> {
+pub fn upsert_user_karma(pgconn: &PgConnection, user_id: u64, karma: i32) -> Result<(), Box<dyn Error>> {
     use schema::users;
 
     // this is technically unsafe transform but due to knowledge about the id system of discord
@@ -55,26 +49,26 @@ pub fn upsert_user_karma(pgconn: &PgConnection, user_id: u64, karma: i32) -> Res
         .set(users::karma.eq(users::karma + karma))
         .execute(pgconn);
     match result.err() {
-        Some(e) => Err(Error::new(
-            ErrorKind::InvalidData,
+        Some(e) => Err(Box::new(io::Error::new(
+            io::ErrorKind::InvalidData,
             format!("Error reading data {}", e),
-        )),
+        ))),
         None => Ok(()),
     }
 }
 
-pub fn leaderboards(pgconn: &PgConnection) -> Result<Vec<ReadUser>, Error> {
+pub fn leaderboards(pgconn: &PgConnection) -> Result<Vec<ReadUser>, Box<dyn Error>> {
     use schema::users::dsl::*;
     match users.order(karma.desc()).limit(10).load::<ReadUser>(pgconn) {
         Ok(users_result) => Ok(users_result),
-        Err(e) => Err(Error::new(
-            ErrorKind::InvalidData,
+        Err(e) => Err(Box::new(io::Error::new(
+            io::ErrorKind::InvalidData,
             format!("Error reading data {}", e),
-        )),
+        ))),
     }
 }
 
-pub fn get_karma_for_id(pgconn: &PgConnection, discord_user_id: u64) -> Result<i32, Error> {
+pub fn get_karma_for_id(pgconn: &PgConnection, discord_user_id: u64) -> Result<i32, Box<dyn Error>> {
     use schema::users::dsl::*;
     // this is technically unsafe transform but due to knowledge about the id system of discord
     // we can ignore this for now (until 2084)
@@ -88,10 +82,10 @@ pub fn get_karma_for_id(pgconn: &PgConnection, discord_user_id: u64) -> Result<i
             Some(karma_count) => karma_count,
             None => 0,
         }),
-        Err(e) => Err(Error::new(
-            ErrorKind::InvalidData,
+        Err(e) => Err(Box::new(io::Error::new(
+            io::ErrorKind::InvalidData,
             format!("Error reading data {}", e),
-        )),
+        ))),
         _ => Ok(0),
     }
 }
