@@ -1,4 +1,5 @@
-use crate::models::*;
+use crate::models::{User, ReadUser};
+use crate::schema;
 use diesel::pg::upsert::*;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
@@ -37,12 +38,12 @@ pub fn establish_connection() -> Result<PgConnection, Error> {
 // - bigserial this might fit both but might have weird odities with updates
 // eh at the end of the day this should be okay
 pub fn upsert_user_karma(pgconn: &PgConnection, user_id: u64, karma: i32) -> Result<(), Error> {
-    use super::schema::users;
+    use schema::users;
 
     // this is technically unsafe transform but due to knowledge about the id system of discord
     // we can ignore this for now (until 2084)
     let user_id = user_id as i64;
-    let user = super::models::User {
+    let user = User {
         user_id: &user_id,
         karma: Some(&karma),
     };
@@ -63,7 +64,7 @@ pub fn upsert_user_karma(pgconn: &PgConnection, user_id: u64, karma: i32) -> Res
 }
 
 pub fn leaderboards(pgconn: &PgConnection) -> Result<Vec<ReadUser>, Error> {
-    use super::schema::users::dsl::*;
+    use schema::users::dsl::*;
     match users.order(karma.desc()).limit(10).load::<ReadUser>(pgconn) {
         Ok(users_result) => Ok(users_result),
         Err(e) => Err(Error::new(
