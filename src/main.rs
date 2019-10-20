@@ -41,6 +41,9 @@ use diesel::pg::PgConnection;
 
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // Initialize the logger
+    pretty_env_logger::init();
+
     // Import environment variables from .env
     dotenv().ok();
     // Get the database URL
