@@ -13,8 +13,27 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Zubotsu.  If not, see <https:#www.gnu.org/licenses/>.
-{ pkgs ? import <nixpkgs> {} }:
-  pkgs.mkShell {
-    RUST_LOG="zubotsu=info";
-    buildInputs = with pkgs; [openssl pkgconfig postgresql];
+let
+  moz_overlay = import (builtins.fetchTarball https://github.com/mozilla/nixpkgs-mozilla/archive/master.tar.gz);
+in
+{ pkgs ? import <nixpkgs> { overlays = [ moz_overlay ]; }}:
+let
+  diesel-cli_custom = pkgs.diesel-cli.override {
+    postgresqlSupport = true;
+    sqliteSupport = false;
+    mysqlSupport = false;
+  };
+in
+pkgs.mkShell {
+  RUST_LOG="zubotsu=info";
+  buildInputs = with pkgs; [
+    # Specific rust branch
+    latest.rustChannels.nightly.rust
+    # For serenity
+    pkgconfig
+    openssl
+    # For diesel
+    diesel-cli_custom
+  ];
 }
+
