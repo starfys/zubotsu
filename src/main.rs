@@ -297,7 +297,6 @@ impl Framework for ZubotsuFramework {
                             error!("reply error: {}", err);
                         };
                     } else {
-                        error!("{}", eval_expr);
                         let karma_amount = match meval::eval_str(eval_expr) {
                             Err(err) => {
                                 error!("reply error: {}", err);
