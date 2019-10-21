@@ -38,22 +38,22 @@ pub fn emojify(message: &str) -> Vec<&str> {
     emoji_map.insert('j', vec!["🇯", "🗾", "🏒"]);
     emoji_map.insert('k', vec!["🇰", "🎋"]);
     emoji_map.insert('l', vec!["🇱"]);
-    emoji_map.insert('m', vec!["🇲", "Ⓜ", "〽️", "Ⓜ️", "♍️"]); // TODO: apparently discord doesn't like all of these
+    emoji_map.insert('m', vec!["🇲", "Ⓜ"]);
     emoji_map.insert('n', vec!["🇳"]);
-    emoji_map.insert('o', vec!["🇴", "🅾", "🅾️", "🌕", "🌚", "🌝", "⚙"]);
-    emoji_map.insert('p', vec!["🇵", "🅿", "🅿️"]);
+    emoji_map.insert('o', vec!["🇴", "🅾️", "🌕", "🌚", "🌝", "⚙"]);
+    emoji_map.insert('p', vec!["🇵", "🅿️"]);
     emoji_map.insert('q', vec!["🇶"]);
     emoji_map.insert('r', vec!["🇷", "®"]);
     emoji_map.insert('s', vec!["🇸", "⚡"]);
     emoji_map.insert('t', vec!["🇹", "✝", "☦", "🌴", "⛏"]);
     emoji_map.insert('u', vec!["🇺", "⛎"]);
-    emoji_map.insert('v', vec!["🇻", "♈", "✅", "✔️", "☑️"]);
+    emoji_map.insert('v', vec!["🇻", "♈", "✅",]);
     emoji_map.insert('w', vec!["🇼"]);
     emoji_map.insert('x', vec!["🇽", "⚔", "❌", "❎"]);
     emoji_map.insert('y', vec!["🇾"]);
     emoji_map.insert('z', vec!["🇿"]);
 
-    emoji_map.insert('!', vec!["‼", "❗️", "❕"]);
+    emoji_map.insert('!', vec!["‼", "❕"]);
     emoji_map.insert('?', vec!["❓", "❔"]);
 
     emoji_map.insert('9', vec!["9⃣"]);

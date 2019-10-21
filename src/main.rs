@@ -183,7 +183,7 @@ impl Framework for ZubotsuFramework {
                             break;
                         }
                         if let Err(err) = message.react(&context, *emoji){
-                            error!("error while reacting {}", err);
+                            error!("error while reacting {} {:?}", err, *emoji);
                         }
                     }
                 }
