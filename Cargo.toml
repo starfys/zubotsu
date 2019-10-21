@@ -20,6 +20,7 @@ serenity = "0.7"
 threadpool = "1.7"
 diesel = { version = "1.4", features = ["postgres"] }
 dotenv = "0.10"
+meval = "0.2"
 
 [profile.release]
 lto = true
