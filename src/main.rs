@@ -177,8 +177,14 @@ impl Framework for ZubotsuFramework {
                 if message_text == "" {
                     let _ = message.reply(&context, "Nothing to respond with");
                 } else {
-                    for emoji in emoji::emojify(message_text) {
-                        let _ = message.react(&context, emoji);
+                    for (index, emoji) in emoji::emojify(message_text).iter().enumerate() {
+                        if index == (emoji::MAXREACTIONLIMIT as usize) {
+                            error!("message_text {} too long, cutting it off now", message_text);
+                            break;
+                        }
+                        if let Err(err) = message.react(&context, *emoji){
+                            error!("error while reacting {}", err);
+                        }
                     }
                 }
             }
@@ -267,7 +273,7 @@ impl Framework for ZubotsuFramework {
                                 if let Err(err) =
                                     message.reply(&context, format!("Here's their karma {}", karma))
                                 {
-                                    error!("{}", err);
+                                    error!("reply error {}", err);
                                 }
                             }
                             Err(err) => {
@@ -275,7 +281,7 @@ impl Framework for ZubotsuFramework {
                                 if let Err(err) =
                                     message.reply(&context, "Could not retrieve data for user {}")
                                 {
-                                    error!("{}", err);
+                                    error!("reply error {}", err);
                                 }
                             }
                         }
@@ -284,7 +290,7 @@ impl Framework for ZubotsuFramework {
                 } else if command.len() > 2 {
                     let karma_amount = match command[1].replace("+", "").parse::<i32>() {
                         Err(err) => {
-                            error!("{}", err);
+                            error!("parse error: {}", err);
                             0
                         }
                         Ok(value) => value,
@@ -293,12 +299,12 @@ impl Framework for ZubotsuFramework {
                         if let Err(err) =
                             message.reply(&context, format!("invalid command {}", command[1]))
                         {
-                            error!("{}", err);
+                            error!("reply error: {}", err);
                         };
                     } else {
                         for mention in message.mentions {
                             match db::upsert_user_karma(&*locked_conn, mention.id.0, karma_amount) {
-                                Err(err) => error!("{}", err),
+                                Err(err) => error!("upsert error: {}", err),
                                 _ => debug!("added {} karma for {}", karma_amount, mention.id.0),
                             };
                         }

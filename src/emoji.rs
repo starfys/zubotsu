@@ -11,6 +11,8 @@ pub const MEGADOWNBISHOY01: EmojiId = EmojiId(544751281978474496);
 pub const MEGADOWNBISHOY10: EmojiId = EmojiId(544751272524251136);
 pub const MEGADOWNBISHOY11: EmojiId = EmojiId(544751261443031061);
 
+pub const MAXREACTIONLIMIT: u32 = 20;
+
 /// Emojis
 
 /// Takes a string, and generates a sequence of emojis that spells out that string
