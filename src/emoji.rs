@@ -40,8 +40,8 @@ pub fn emojify(message: &str) -> Vec<&str> {
     emoji_map.insert('l', vec!["🇱"]);
     emoji_map.insert('m', vec!["🇲", "Ⓜ"]);
     emoji_map.insert('n', vec!["🇳"]);
-    emoji_map.insert('o', vec!["🇴", "🅾️", "🌕", "🌚", "🌝", "⚙"]);
-    emoji_map.insert('p', vec!["🇵", "🅿️"]);
+    emoji_map.insert('o', vec!["🇴", "🅾", "🌕", "🌚", "🌝", "⚙"]);
+    emoji_map.insert('p', vec!["🇵", "🅿"]);
     emoji_map.insert('q', vec!["🇶"]);
     emoji_map.insert('r', vec!["🇷", "®"]);
     emoji_map.insert('s', vec!["🇸", "⚡"]);
