@@ -30,7 +30,7 @@ use log::{debug, error};
 use serenity::client::Client;
 use serenity::framework::Framework;
 use serenity::model::channel::Message;
-use serenity::model::id::{UserId,GuildId};
+use serenity::model::id::{GuildId, UserId};
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
 use std::env;
@@ -184,7 +184,7 @@ impl Framework for ZubotsuFramework {
                             error!("message_text {} too long, cutting it off now", message_text);
                             break;
                         }
-                        if let Err(err) = message.react(&context, *emoji){
+                        if let Err(err) = message.react(&context, *emoji) {
                             error!("error while reacting {} {:?}", err, *emoji);
                         }
                     }
