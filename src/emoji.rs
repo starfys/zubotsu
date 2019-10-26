@@ -3,6 +3,8 @@
 use serenity::model::id::EmojiId;
 use std::collections::HashMap;
 
+use rand::prelude::*;
+
 pub const RUST: EmojiId = EmojiId(539907481095110676);
 pub const HASKELL: EmojiId = EmojiId(540376527674540048);
 
@@ -47,7 +49,7 @@ pub fn emojify(message: &str) -> Vec<&str> {
     emoji_map.insert('s', vec!["🇸", "⚡"]);
     emoji_map.insert('t', vec!["🇹", "✝", "☦", "🌴", "⛏"]);
     emoji_map.insert('u', vec!["🇺", "⛎"]);
-    emoji_map.insert('v', vec!["🇻", "♈", "✅",]);
+    emoji_map.insert('v', vec!["🇻", "♈", "✅"]);
     emoji_map.insert('w', vec!["🇼"]);
     emoji_map.insert('x', vec!["🇽", "⚔", "❌", "❎"]);
     emoji_map.insert('y', vec!["🇾"]);
@@ -86,4 +88,62 @@ pub fn emojify(message: &str) -> Vec<&str> {
         };
     }
     emojis
+}
+
+pub fn emoji_replace(message: &str) -> String {
+    let mut rng = rand::thread_rng();
+    // TODO: make this lazy static (inside the function)
+    // Construct emoji map
+    let mut emoji_map: HashMap<char, Vec<&'static str>> = HashMap::new();
+    emoji_map.insert('a', vec!["🇦", "🅰"]);
+    emoji_map.insert('b', vec!["🇧", "🅱"]);
+    emoji_map.insert('c', vec!["🇨", "©", "🌜"]);
+    emoji_map.insert('d', vec!["🇩"]);
+    emoji_map.insert('e', vec!["🇪", "📧"]);
+    emoji_map.insert('f', vec!["🇫", "🎏"]);
+    emoji_map.insert('g', vec!["🇬"]);
+    emoji_map.insert('h', vec!["🇭", "♓"]);
+    emoji_map.insert('i', vec!["🇮", "ℹ", "🌵", "🚦", "🛢", "🕯", "📍", "🎚"]);
+    emoji_map.insert('j', vec!["🇯", "🗾", "🏒"]);
+    emoji_map.insert('k', vec!["🇰", "🎋"]);
+    emoji_map.insert('l', vec!["🇱"]);
+    emoji_map.insert('m', vec!["🇲", "Ⓜ", "〽️", "Ⓜ️", "♍️"]);
+    emoji_map.insert('n', vec!["🇳"]);
+    emoji_map.insert('o', vec!["🇴", "🅾", "🅾️", "🌕", "🌚", "🌝", "⚙"]);
+    emoji_map.insert('p', vec!["🇵", "🅿", "🅿️"]);
+    emoji_map.insert('q', vec!["🇶"]);
+    emoji_map.insert('r', vec!["🇷", "®"]);
+    emoji_map.insert('s', vec!["🇸", "⚡"]);
+    emoji_map.insert('t', vec!["🇹", "✝", "☦", "🌴", "⛏"]);
+    emoji_map.insert('u', vec!["🇺", "⛎"]);
+    emoji_map.insert('v', vec!["🇻", "♈", "✅", "✔️", "☑️"]);
+    emoji_map.insert('w', vec!["🇼"]);
+    emoji_map.insert('x', vec!["🇽", "⚔", "❌", "❎"]);
+    emoji_map.insert('y', vec!["🇾"]);
+    emoji_map.insert('z', vec!["🇿"]);
+
+    emoji_map.insert('!', vec!["‼", "❕"]);
+    emoji_map.insert('?', vec!["❓", "❔"]);
+
+    emoji_map.insert('9', vec!["9⃣"]);
+    emoji_map.insert('7', vec!["7⃣"]);
+    emoji_map.insert('8', vec!["8⃣"]);
+    emoji_map.insert('6', vec!["6⃣"]);
+    emoji_map.insert('5', vec!["5⃣"]);
+    emoji_map.insert('4', vec!["4⃣"]);
+    emoji_map.insert('3', vec!["3⃣"]);
+    emoji_map.insert('2', vec!["2⃣"]);
+    emoji_map.insert('1', vec!["1⃣"]);
+    emoji_map.insert('0', vec!["0⃣"]);
+    let mut response = String::new();
+
+    for character in message.chars() {
+        match emoji_map.get(&character) {
+            Some(emoji_list) => {
+                response.push_str(emoji_list[(rng.next_u32() % emoji_list.len() as u32) as usize])
+            }
+            None => response.push(character),
+        };
+    }
+    response
 }
