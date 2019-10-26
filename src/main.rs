@@ -31,7 +31,7 @@ use meval;
 use serenity::client::Client;
 use serenity::framework::Framework;
 use serenity::model::channel::Message;
-use serenity::model::id::{GuildId, UserId};
+use serenity::model::id::UserId;
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
 use std::env;
@@ -174,15 +174,38 @@ impl Framework for ZubotsuFramework {
             if message_text.starts_with("zubotsu") {
                 let message_text = message_text.trim_start_matches("zubotsu ");
                 if message_text == "" {
-                    let _ = message.reply(&context, "Nothing to respond with");
+                    if let Err(e) = message.reply(&context, "Nothing to respond with") {
+                        error!("error while reacting {}", e);
+                    }
                 } else {
-                    for (index, emoji) in emoji::emojify(message_text).iter().enumerate() {
-                        if index == (emoji::MAXREACTIONLIMIT as usize) {
-                            error!("message_text {} too long, cutting it off now", message_text);
-                            break;
+                    // by default use a reaction if the number of reactable emojis are lower than 20 ( discord emoji limit)
+                    // by default use a reply if above
+                    // add a new command to force a reply message
+                    // add a new command to force a react message
+                    let emoji_map = emoji::emojify(message_text.trim_start_matches("react "));
+                    if message_text.starts_with("reply ")
+                        || (emoji_map.len() > emoji::MAX_REACTION_LIMIT as usize
+                            && !message_text.starts_with("react "))
+                    {
+                        let message_text = message_text.trim_start_matches("reply ");
+                        if let Err(err) =
+                            message.reply(&context, emoji::emoji_replace(message_text))
+                        {
+                            error!("error while replying {}", err);
                         }
-                        if let Err(err) = message.react(&context, *emoji) {
-                            error!("error while reacting {} {:?}", err, *emoji);
+
+                    } else {
+                        for (index, emoji) in emoji_map.iter().enumerate() {
+                            if index == (emoji::MAX_REACTION_LIMIT as usize) {
+                                error!(
+                                    "message_text {} too long, cutting it off now",
+                                    message_text
+                                );
+                                break;
+                            }
+                            if let Err(err) = message.react(&context, *emoji) {
+                                error!("error while reacting {} {:?}", err, *emoji);
+                            }
                         }
                     }
                 }
