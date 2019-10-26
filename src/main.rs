@@ -184,7 +184,7 @@ impl Framework for ZubotsuFramework {
                     // add a new command to force a react message
                     let emoji_map = emoji::emojify(message_text.trim_start_matches("react "));
                     if message_text.starts_with("reply ")
-                        || (emoji_map.len() > emoji::MAXREACTIONLIMIT as usize
+                        || (emoji_map.len() > emoji::MAX_REACTION_LIMIT as usize
                             && !message_text.starts_with("react "))
                     {
                         let message_text = message_text.trim_start_matches("reply ");
@@ -196,7 +196,7 @@ impl Framework for ZubotsuFramework {
 
                     } else {
                         for (index, emoji) in emoji_map.iter().enumerate() {
-                            if index == (emoji::MAXREACTIONLIMIT as usize) {
+                            if index == (emoji::MAX_REACTION_LIMIT as usize) {
                                 error!(
                                     "message_text {} too long, cutting it off now",
                                     message_text
