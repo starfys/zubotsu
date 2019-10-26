@@ -27,6 +27,7 @@ use chrono::prelude::*;
 use diesel::pg::PgConnection;
 use dotenv::dotenv;
 use log::{debug, error};
+use meval;
 use serenity::client::Client;
 use serenity::framework::Framework;
 use serenity::model::channel::Message;
@@ -293,27 +294,42 @@ impl Framework for ZubotsuFramework {
                             }
                         }
                     }
-                // karmabot +69 @(apply #(lube %) (your butt))
+                // karmabot 69 @(apply #(lube %) (your butt))
                 } else if command.len() > 2 {
-                    let karma_amount = match command[1].replace("+", "").parse::<i32>() {
-                        Err(err) => {
-                            error!("parse error: {}", err);
-                            0
-                        }
-                        Ok(value) => value,
-                    };
-                    if karma_amount == 0 {
-                        if let Err(err) =
-                            message.reply(&context, format!("invalid command {}", command[1]))
-                        {
+
+                    let eval_expr = message_text.trim_start_matches("karmabot ").replace(" ","");
+                    let eval_expr = eval_expr.split_at(eval_expr.find("<@").unwrap()).0;
+                    if eval_expr == "" {
+                        if let Err(err) = message.reply(&context, format!("empty command")) {
                             error!("reply error: {}", err);
                         };
                     } else {
-                        for mention in message.mentions {
-                            match db::upsert_user_karma(&*locked_conn, mention.id.0, karma_amount) {
-                                Err(err) => error!("upsert error: {}", err),
-                                _ => debug!("added {} karma for {}", karma_amount, mention.id.0),
+                        let karma_amount = match meval::eval_str(eval_expr) {
+                            Err(err) => {
+                                error!("reply error: {}", err);
+                                0
+                            }
+                            Ok(value) => value as i32,
+                        };
+                        if karma_amount == 0 {
+                            if let Err(err) =
+                                message.reply(&context, format!("invalid command {}", eval_expr))
+                            {
+                                error!("reply error: {}", err);
                             };
+                        } else {
+                            for mention in message.mentions {
+                                match db::upsert_user_karma(
+                                    &*locked_conn,
+                                    mention.id.0,
+                                    karma_amount,
+                                ) {
+                                    Err(err) => error!("upsert db error: {}", err),
+                                    _ => {
+                                        debug!("added {} karma for {}", karma_amount, mention.id.0)
+                                    }
+                                };
+                            }
                         }
                     }
                 }
