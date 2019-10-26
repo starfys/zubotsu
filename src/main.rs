@@ -30,7 +30,7 @@ use log::{debug, error};
 use serenity::client::Client;
 use serenity::framework::Framework;
 use serenity::model::channel::Message;
-use serenity::model::id::UserId;
+use serenity::model::id::{GuildId, UserId};
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
 use std::env;
@@ -49,7 +49,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let database_url = env::var("DATABASE_URL")?;
     // Get the bot token
     let bot_token = env::var("DISCORD_TOKEN")?;
-
     // Login with a bot token from the environment
     let mut client = Client::new(&bot_token, Handler)?;
 
@@ -71,7 +70,6 @@ impl EventHandler for Handler {}
 
 struct ZubotsuFramework {
     free_software: Arc<AtomicBool>,
-    // dao: &'T db::DAO<'T>,
     db_conn: Arc<Mutex<PgConnection>>,
 }
 
@@ -182,7 +180,7 @@ impl Framework for ZubotsuFramework {
                             error!("message_text {} too long, cutting it off now", message_text);
                             break;
                         }
-                        if let Err(err) = message.react(&context, *emoji){
+                        if let Err(err) = message.react(&context, *emoji) {
                             error!("error while reacting {} {:?}", err, *emoji);
                         }
                     }
@@ -224,6 +222,7 @@ impl Framework for ZubotsuFramework {
 
             // karmabot +69 @(apply #(lube %) (your butt))
             if message_text.starts_with("karmabot") {
+                let guild_id = message.guild_id;
                 // let's get access to the db conn
                 let locked_conn = conn.lock().unwrap();
                 let command = message_text.split(' ').collect::<Vec<&str>>();
@@ -244,7 +243,15 @@ impl Framework for ZubotsuFramework {
                                             error!("unknown id {} {}", user_id, e);
                                             format!("unknown id {}", user_id)
                                         }
-                                        Ok(user) => user.name,
+                                        Ok(user) => match guild_id {
+                                            Some(guild_id) => {
+                                                match user.nick_in(&context, guild_id) {
+                                                    Some(nick_name) => nick_name,
+                                                    None => user.name,
+                                                }
+                                            }
+                                            None => user.name,
+                                        },
                                     };
                                     let karma_amount = match karma_user.karma {
                                         Some(karma_amount) => karma_amount,
