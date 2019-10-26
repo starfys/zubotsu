@@ -9,7 +9,6 @@ this is best done by creating an .env folder and having an environment variable
 DATABASE_URL=postgresql://127.0.0.1:5432/dbname?user=dbuser&password=dbpassword
 RUST_LOG=debug
 DISCORD_TOKEN=MYTOKEN
-GUILD_ID=myGuildIDInteger
 ```
 
 if it is your first time running the postgres side of the server you will need to run the following commands

@@ -49,12 +49,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let database_url = env::var("DATABASE_URL")?;
     // Get the bot token
     let bot_token = env::var("DISCORD_TOKEN")?;
-    let guild_id = GuildId(env::var("GUILD_ID")?.parse::<u64>()?);
     // Login with a bot token from the environment
     let mut client = Client::new(&bot_token, Handler)?;
 
     // Initialize the framework
-    let framework = ZubotsuFramework::new(&database_url, guild_id)?;
+    let framework = ZubotsuFramework::new(&database_url)?;
 
     // Set the client to use our dank rust framework
     client.with_framework(framework);
@@ -72,17 +71,15 @@ impl EventHandler for Handler {}
 struct ZubotsuFramework {
     free_software: Arc<AtomicBool>,
     db_conn: Arc<Mutex<PgConnection>>,
-    guild_id: Arc<GuildId>,
 }
 
 impl ZubotsuFramework {
-    fn new(database_url: &str, guild_id: GuildId) -> Result<Self, diesel::ConnectionError> {
+    fn new(database_url: &str) -> Result<Self, diesel::ConnectionError> {
         let conn = db::establish_connection(database_url)?;
 
         Ok(ZubotsuFramework {
             free_software: Arc::new(AtomicBool::new(false)),
             db_conn: Arc::new(Mutex::new(conn)),
-            guild_id: Arc::new(guild_id),
         })
     }
 }
@@ -92,7 +89,6 @@ impl Framework for ZubotsuFramework {
         // Clone a message reference
         let free_software = self.free_software.clone();
         let conn = self.db_conn.clone();
-        let guild_id = self.guild_id.clone();
         // Handle the message in another thread
         threadpool.execute(move || {
             // Convert the message to lowercase for string matching
@@ -226,6 +222,7 @@ impl Framework for ZubotsuFramework {
 
             // karmabot +69 @(apply #(lube %) (your butt))
             if message_text.starts_with("karmabot") {
+                let guild_id = message.guild_id;
                 // let's get access to the db conn
                 let locked_conn = conn.lock().unwrap();
                 let command = message_text.split(' ').collect::<Vec<&str>>();
@@ -246,8 +243,13 @@ impl Framework for ZubotsuFramework {
                                             error!("unknown id {} {}", user_id, e);
                                             format!("unknown id {}", user_id)
                                         }
-                                        Ok(user) => match user.nick_in(&context, &*guild_id) {
-                                            Some(nick_name) => nick_name,
+                                        Ok(user) => match guild_id {
+                                            Some(guild_id) => {
+                                                match user.nick_in(&context, guild_id) {
+                                                    Some(nick_name) => nick_name,
+                                                    None => user.name,
+                                                }
+                                            }
                                             None => user.name,
                                         },
                                     };
