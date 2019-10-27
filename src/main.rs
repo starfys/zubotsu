@@ -285,7 +285,7 @@ impl Framework for ZubotsuFramework {
                                 });
                                 // TODO: update this so that we collect using `.map(|s| &**s)`
                                 // instead so we can borrow these strings
-                                if let Err(e) = message.reply(
+                                if let Err(e) = message.channel_id.say(
                                     &context,
                                     format!(
                                         "High Scores \n{}",
