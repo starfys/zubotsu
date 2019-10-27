@@ -33,6 +33,7 @@ pkgs.mkShell {
     pkgconfig
     openssl
     # For diesel
+    postgresql
     diesel-cli_custom
   ];
 }

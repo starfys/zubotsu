@@ -189,7 +189,7 @@ impl Framework for ZubotsuFramework {
                     {
                         let message_text = message_text.trim_start_matches("reply ");
                         if let Err(err) =
-                            message.reply(&context, emoji::emoji_replace(message_text))
+                            message.channel_id.say(&context, emoji::emoji_replace(message_text))
                         {
                             error!("error while replying {}", err);
                         }
@@ -231,7 +231,7 @@ impl Framework for ZubotsuFramework {
                     name: "megadownbishoy11".to_string(),
                 };
 
-                let _ = message.reply(
+                let _ = message.channel_id.say(
                     &context,
                     format!(
                         "\n{}{}\n{}{}",
@@ -285,7 +285,7 @@ impl Framework for ZubotsuFramework {
                                 });
                                 // TODO: update this so that we collect using `.map(|s| &**s)`
                                 // instead so we can borrow these strings
-                                if let Err(e) = message.reply(
+                                if let Err(e) = message.channel_id.say(
                                     &context,
                                     format!(
                                         "High Scores \n{}",
