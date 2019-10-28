@@ -182,7 +182,7 @@ impl Framework for ZubotsuFramework {
                     // by default use a reply if above
                     // add a new command to force a reply message
                     // add a new command to force a react message
-                    // if we no availible emojis to force a reply message
+                    // if there are no availible emojis force a reply message
                     let emoji_map = emoji::emojify(message_text.trim_start_matches("react "));
                     if message_text.starts_with("reply ")
                         || ((emoji_map.len() > emoji::MAX_REACTION_LIMIT as usize
