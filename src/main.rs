@@ -182,18 +182,20 @@ impl Framework for ZubotsuFramework {
                     // by default use a reply if above
                     // add a new command to force a reply message
                     // add a new command to force a react message
+                    // if we no availible emojis to force a reply message
                     let emoji_map = emoji::emojify(message_text.trim_start_matches("react "));
                     if message_text.starts_with("reply ")
-                        || (emoji_map.len() > emoji::MAX_REACTION_LIMIT as usize
+                        || ((emoji_map.len() > emoji::MAX_REACTION_LIMIT as usize
+                            || emoji_map.is_empty()) 
                             && !message_text.starts_with("react "))
                     {
                         let message_text = message_text.trim_start_matches("reply ");
-                        if let Err(err) =
-                            message.channel_id.say(&context, emoji::emoji_replace(message_text))
+                        if let Err(err) = message
+                            .channel_id
+                            .say(&context, emoji::emoji_replace(message_text))
                         {
                             error!("error while replying {}", err);
                         }
-
                     } else {
                         for (index, emoji) in emoji_map.iter().enumerate() {
                             if index == (emoji::MAX_REACTION_LIMIT as usize) {
@@ -319,8 +321,9 @@ impl Framework for ZubotsuFramework {
                     }
                 // karmabot 69 @(apply #(lube %) (your butt))
                 } else if command.len() > 2 {
-
-                    let eval_expr = message_text.trim_start_matches("karmabot ").replace(" ","");
+                    let eval_expr = message_text
+                        .trim_start_matches("karmabot ")
+                        .replace(" ", "");
                     let eval_expr = eval_expr.split_at(eval_expr.find("<@").unwrap()).0;
                     if eval_expr == "" {
                         if let Err(err) = message.reply(&context, format!("empty command")) {
