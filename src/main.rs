@@ -27,11 +27,10 @@ use chrono::prelude::*;
 use diesel::pg::PgConnection;
 use dotenv::dotenv;
 use log::{debug, error};
-use meval;
 use serenity::client::Client;
 use serenity::framework::Framework;
 use serenity::model::channel::Message;
-use serenity::model::id::UserId;
+use serenity::model::id::{UserId, ChannelId};
 use serenity::model::misc::EmojiIdentifier;
 use serenity::prelude::{Context, EventHandler};
 use std::env;
@@ -39,6 +38,10 @@ use std::error::Error;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use threadpool::ThreadPool;
+
+// Git hash of the current program
+const GIT_HASH: &str = env!("GIT_HASH");
+
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Initialize the logger
@@ -50,8 +53,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let database_url = env::var("DATABASE_URL")?;
     // Get the bot token
     let bot_token = env::var("DISCORD_TOKEN")?;
+    // Get the channel id for the startup message
+    let debug_channel_id = env::var("DEBUG_CHANNEL_ID")?.parse().map(ChannelId)?;
+
     // Login with a bot token from the environment
     let mut client = Client::new(&bot_token, Handler)?;
+
+    // Directly access the client's HTTP handler to send a message to a specific channel
+    debug_channel_id.say(&client.cache_and_http.http, format!("Started Zubotsu revision {}", GIT_HASH))?;
 
     // Initialize the framework
     let framework = ZubotsuFramework::new(&database_url)?;
