@@ -13,7 +13,7 @@ pub const MEGADOWNBISHOY01: EmojiId = EmojiId(544751281978474496);
 pub const MEGADOWNBISHOY10: EmojiId = EmojiId(544751272524251136);
 pub const MEGADOWNBISHOY11: EmojiId = EmojiId(544751261443031061);
 
-pub const MAX_REACTION_LIMIT: u32 = 20;
+pub const MAX_REACTION_LIMIT: usize = 20;
 
 /// Emojis
 
