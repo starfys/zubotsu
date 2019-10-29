@@ -14,10 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Zubotsu.  If not, see <https://www.gnu.org/licenses/>.
 
-use git2::{Object, Oid, Repository};
+use git2::{Oid, Repository};
 use std::env;
 use std::io;
-use std::str::FromStr;
 
 /// Accesses the current repository and gets the currently revision string
 fn get_git_hash() -> Result<Oid, Box<dyn std::error::Error>> {
