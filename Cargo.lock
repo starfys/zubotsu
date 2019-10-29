@@ -1913,7 +1913,7 @@ dependencies = [
 
 [[package]]
 name = "zubotsu"
-version = "0.1.0"
+version = "0.5.0"
 dependencies = [
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "diesel 1.4.3 (registry+https://github.com/rust-lang/crates.io-index)",

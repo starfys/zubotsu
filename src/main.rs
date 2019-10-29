@@ -39,9 +39,12 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use threadpool::ThreadPool;
 
+// Crate name
+const NAME: &str = env!("CARGO_PKG_NAME");
+// Crate version
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 // Git hash of the current program
 const GIT_HASH: &str = env!("GIT_HASH");
-
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Initialize the logger
@@ -60,7 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut client = Client::new(&bot_token, Handler)?;
 
     // Directly access the client's HTTP handler to send a message to a specific channel
-    debug_channel_id.say(&client.cache_and_http.http, format!("Started Zubotsu revision {}", GIT_HASH))?;
+    debug_channel_id.say(&client.cache_and_http.http, format!("Started {} {}.{}", NAME, VERSION, GIT_HASH))?;
 
     // Initialize the framework
     let framework = ZubotsuFramework::new(&database_url)?;
