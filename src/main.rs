@@ -185,8 +185,7 @@ impl Framework for ZubotsuFramework {
                     // if there are no availible emojis force a reply message
                     let emoji_map = emoji::emojify(message_text.trim_start_matches("react "));
                     if message_text.starts_with("reply ")
-                        || ((emoji_map.len() > emoji::MAX_REACTION_LIMIT as usize
-                            || emoji_map.is_empty()) 
+                        || ((emoji_map.len() > emoji::MAX_REACTION_LIMIT || emoji_map.is_empty())
                             && !message_text.starts_with("react "))
                     {
                         let message_text = message_text.trim_start_matches("reply ");
@@ -198,7 +197,7 @@ impl Framework for ZubotsuFramework {
                         }
                     } else {
                         for (index, emoji) in emoji_map.iter().enumerate() {
-                            if index == (emoji::MAX_REACTION_LIMIT as usize) {
+                            if index == emoji::MAX_REACTION_LIMIT {
                                 error!(
                                     "message_text {} too long, cutting it off now",
                                     message_text
@@ -323,38 +322,42 @@ impl Framework for ZubotsuFramework {
                 } else if command.len() > 2 {
                     let eval_expr = message_text
                         .trim_start_matches("karmabot ")
-                        .replace(" ", "");
-                    let eval_expr = eval_expr.split_at(eval_expr.find("<@").unwrap()).0;
-                    if eval_expr == "" {
-                        if let Err(err) = message.reply(&context, format!("empty command")) {
-                            error!("reply error: {}", err);
-                        };
-                    } else {
-                        let karma_amount = match meval::eval_str(eval_expr) {
-                            Err(err) => {
+                        .replace(' ', "");
+                    let eval_expr = eval_expr.split("<@").next();
+                    match eval_expr {
+                        Some("") | None => {
+                            if let Err(err) = message.reply(&context, format!("empty command")) {
                                 error!("reply error: {}", err);
-                                0
                             }
-                            Ok(value) => value as i32,
-                        };
-                        if karma_amount == 0 {
-                            if let Err(err) =
-                                message.reply(&context, format!("invalid command {}", eval_expr))
-                            {
-                                error!("reply error: {}", err);
+                        }
+                        Some(eval_expr) => {
+                            let karma_amount = match meval::eval_str(eval_expr) {
+                                Err(err) => {
+                                    error!("reply error: {}", err);
+                                    0
+                                }
+                                Ok(value) => value as i32,
                             };
-                        } else {
-                            for mention in message.mentions {
-                                match db::upsert_user_karma(
-                                    &*locked_conn,
-                                    mention.id.0,
-                                    karma_amount,
-                                ) {
-                                    Err(err) => error!("upsert db error: {}", err),
-                                    _ => {
-                                        debug!("added {} karma for {}", karma_amount, mention.id.0)
-                                    }
+                            if karma_amount == 0 {
+                                if let Err(err) = message
+                                    .reply(&context, format!("invalid command {}", eval_expr))
+                                {
+                                    error!("reply error: {}", err);
                                 };
+                            } else {
+                                for mention in message.mentions {
+                                    match db::upsert_user_karma(
+                                        &*locked_conn,
+                                        mention.id.0,
+                                        karma_amount,
+                                    ) {
+                                        Err(err) => error!("upsert db error: {}", err),
+                                        _ => debug!(
+                                            "added {} karma for {}",
+                                            karma_amount, mention.id.0
+                                        ),
+                                    };
+                                }
                             }
                         }
                     }
