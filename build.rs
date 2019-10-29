@@ -14,14 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Zubotsu.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::process::Command;
+use git2::{Object, Oid, Repository};
+use std::env;
+use std::io;
+use std::str::FromStr;
+
+/// Accesses the current repository and gets the currently revision string
+fn get_git_hash() -> Result<Oid, Box<dyn std::error::Error>> {
+    // Get current dir (crate root)
+    let cwd = env::current_dir()?;
+    // Open the git repo
+    let repo = Repository::open(cwd)?;
+    // Get the rev spec
+    let rev_spec = repo.revparse("HEAD")?;
+    // Get the string from the rev spec
+    let rev = rev_spec
+        .from()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to get revision from spec"))?
+        .id();
+    Ok(rev)
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Get the git revision by running git
-    // TODO: use a git crate
-    let output = Command::new("git").args(&["rev-parse", "HEAD"]).output()?.stdout;
-    // Convert the output to a string
-    let git_hash = String::from_utf8(output)?;
+    // Get a handle to the local git repository. If this fails, that's okay.
+    let git_hash = get_git_hash().map(|oid| oid.to_string()).unwrap_or_else(|_| String::from("UNKNOWN"));
     // Output the git hash to the environment
     println!("cargo:rustc-env=GIT_HASH={}", git_hash);
 
